@@ -1,0 +1,38 @@
+h1 {
+  font-family: Cabin, Arial, sans-serif;
+}
+
+table {
+  border-style: solid;
+  border-width: 1px;
+  border-color: #aaa;
+}
+
+caption {
+  text-align: left;
+}
+
+th {
+  text-align: left;
+  padding: 6px;
+}
+
+td.rightj {
+  text-align: right;
+  padding: 6px;
+}
+td.leftj {
+  text-align: left;
+  padding: 6px;
+}
+
+.container {
+  display: table;
+  width: 100%;
+}
+
+span {
+  display: block;
+  overflow: hidden;
+  padding: 0 4px 0 6px;
+}

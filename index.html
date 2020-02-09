@@ -1,0 +1,310 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <link rel="stylesheet" href="css/gaston.css">
+
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <script>
+  $( function() {
+    $( "#tabs" ).tabs();
+  } );
+
+  function updateNCat(val) {
+    $( '#ncat-display' )[0].innerHTML=val;
+  }
+
+  function activateNCat(val) {
+    if (val == 'G' | val=='GI') {
+      $( '#ncat-range' )[0].disabled = false;
+    } else {
+      $( '#ncat-range' )[0].disabled = true;
+    }
+  }
+
+  function activateRelaxed(val) {
+    if (val=='uncorrelated') {
+      $( '#select-relaxed-dist' )[0].disabled = false;
+    } else {
+      $( '#select-relaxed-dist' )[0].disabled = true;
+    }
+  }
+
+  $( document ).ready(function() {
+    console.log('ready!');
+    $( '#ncat-range ').trigger("change");
+  });
+
+  </script>
+</head>
+
+<body>
+
+<h1>Gaston.js</h1>
+<div id="tabs">
+  <ul>
+    <li><a href="#tab-partitions">Partitions</a></li>
+    <li><a href="#tab-taxa">Taxa</a></li>
+    <li><a href="#tab-tips">Tips</a></li>
+    <li><a href="#tab-traits">Traits</a></li>
+    <li><a href="#tab-sites">Sites</a></li>
+    <li><a href="#tab-clocks">Clocks</a></li>
+    <li><a href="#tab-trees">Trees</a></li>
+    <li><a href="#tab-states">States</a></li>
+    <li><a href="#tab-priors">Priors</a></li>
+    <li><a href="#tab-priors">Operators</a></li>
+    <li><a href="#tab-priors">MCMC</a></li>
+  </ul>
+
+  <div id="tab-partitions">
+    <table width="100%">
+      <thead>
+        <tr>
+          <th>Partition Name</th>
+          <th>File Name</th>
+          <th>Taxa</th>
+          <th>Sites</th>
+          <th>Data Type</th>
+          <th>Site Model</th>
+          <th>Clock Model</th>
+          <th>Partition Tree</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div id="partitions"></div></td>
+        </tr>
+      </tbody>
+    </table>
+    <button>+</button>
+  </div>
+
+  <div id="tab-taxa">
+    <p>
+    Not yet implemented.
+    </p>
+  </div>
+
+  <div id="tab-tips">
+    <table width="100%">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Date</th>
+          <th>Uncertainty</th>
+          <th>Height</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div id="tips"></div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div id="tab-traits">
+    <p>
+    Not yet implemented.
+    </p>
+  </div>
+
+  <div id="tab-sites">
+    <table width="50%">
+      <caption>Nucleotide Substitution Model - default</caption>
+      <tr>
+        <td class="rightj"><label>Substitution Model</label></td>
+        <td>
+          <select id="select-submodel">
+            <option value="JC">JC</option>
+            <option value="HKY">HKY</option>
+            <option value="GTR">GTR</option>
+            <option value="TN93">TN93</option>
+          </select>
+        </td>
+      </tr>
+
+      <tr>
+        <td class="rightj"><label>Base frequencies:</label></td>
+        <td>
+          <select id="select-basefreq">
+            <option value="Estimated">Estimated</option>
+            <option value="Empirical">Empirical</option>
+            <option value="Equal">All equal</option>
+          </select>
+        </td>
+      </tr>
+
+      <tr>
+        <td class="rightj"><label>Site Heterogeneity Model</label></td>
+        <td>
+          <select id="select-sitehetero" onchange="activateNCat(this.value)">
+            <option value="None">None</option>
+            <option value="G">Gamma</option>
+            <option value="I">Invariant Sites</option>
+            <option value="GI">Gamma + Invariant Sites</option>
+          </select>
+        </td>
+      </tr>
+
+      <!-- default to inactive unless select-sitehetero = G or GI-->
+      <tr>
+        <td class="rightj"><label>Number of Gamma Categories</label></td>
+        <td>
+          <input type="range" id="ncat-range" min="4" max="10" disabled="true" onchange="updateNCat(this.value)">
+          <div id="ncat-display"></div>
+        </td>
+      </tr>
+
+      <tr style="border-bottom:3px solid black">
+        <td></td>
+      </tr>
+
+      <tr>
+        <td class="rightj"><label>Partition into codon positions:</label></td>
+        <td>
+          <select id="select-codonpos">
+            <option value="Off">Off</option>
+            <option value="2">2 partitions: positions (1+2), 3</option>
+            <option value="3">3 partitions: positions 1, 2, 3</option>
+          </select>
+        </td>
+      </tr>
+    </table>
+
+  </div>
+
+  <div id="tab-clocks">
+    <table>
+      <tr>
+        <td class="rightj"><label>Clock type:</label></td>
+        <td>
+          <select id="select-clock" onchange="activateRelaxed(this.value)">
+            <option value="strict">Strict clock</option>
+            <option value="uncorrelated">Uncorrelated relaxed clock</option>
+            <option value="random-local">Random local clock</option>
+            <option value="fixed-local">Fixed local clock</option>
+          </select>
+        </td>
+      </tr>
+
+      <tr>
+        <td class="rightj"><label>Clock type:</label></td>
+        <td>
+          <select id="select-relaxed-dist" disabled=true>
+            <option value="lognormal">Lognormal</option>
+            <option value="gamma">Gamma</option>
+            <option value="exponential">Exponential</option>
+          </select>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <div id="tab-trees">
+    <table width="100%">
+      <caption>Tree prior shared by all tree models</caption>
+      <tr>
+        <td class="rightj"><label>Tree prior:</label></td>
+        <td>
+          <select id="select-clock" onchange="activateRelaxed(this.value)">
+            <option value="constant">Coalescent: Constant Size</option>
+            <option value="exponential">Coalescent: Exponential Growth</option>
+            <option value="logistic">Coalescent: Logistic Growth</option>
+            <option value="expansion">Coalescent: Expansion Growth</option>
+            <option value="skygrid">Coalescent: Bayesian SkyGrid</option>
+            <option value="skyride">Coalescent: GMRF Bayesian Skyride</option>
+            <option value="skyline">Coalescent: Bayesian Skyline</option>
+            <option value="extended">Coalescent: Extended Bayesian Skyline Plot</option>
+            <option value="yule">Speciation: Yule Process</option>
+            <option value="yule-cali">Speciation: Calibrated Yule</option>
+            <option value="bd">Speciation: Birth-Death Process</option>
+            <option value="bd-incomplete">Speciation: Birth-Death Incomplete Sampling</option>
+            <option value="bd-serial">Speciation: Birth-Death Serially Sampled</option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td class="rightj" id="clock-label"></td>
+        <td class="leftj" id="clock-input"></td>
+      </tr>
+      <tr>
+        <td class="rightj"><label>Citation:</label></td>
+        <div id="clock-citation"></div>
+      </tr>
+    </table>
+    <table width="100%">
+      <caption>Tree Model - default</caption>
+      <tr>
+        <td colspan="2">
+          <div>
+            <input type="radio" id="random-starting-tree" name="startingTree" value="random" checked>
+            <label for="random-starting-tree">Random starting tree</label>
+          </div>
+          <div>
+            <input type="radio" id="UPGMA-starting-tree" name="startingTree" value="upgma">
+            <label for="UPGMA-starting-tree">UPGMA starting tree</label>
+          </div>
+          <div>
+            <input type="radio" id="user-starting-tree" name="startingTree" value="user">
+            <label for="user-starting-tree">User-specified starting tree</label>
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td class="rightj">
+          <label>Select user-specified tree:</label>
+        </td>
+        <td class="leftj">
+          <select id="user-tree" disabled=true>
+          </select>
+        </td>
+      </tr>
+
+      <tr>
+        <td class="rightj">
+          <label>Export format for tree:</label>
+        </td>
+        <td class="leftj">
+          <select id="export-format" disabled=true>
+          </select>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <div id="tab-states">
+    <p>
+    Not yet implemented.
+    </p>
+  </div>
+
+  <div id="tab-priors">
+    <table width="100%">
+      <thead>
+        <tr>
+          <th>Parameter</th>
+          <th>Prior</th>
+          <th>Bound</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <!-- populate based on -->
+          <td><div id="table-priors"></div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+<!-- end div tabs -->
+
+</body>
+
+</html>
