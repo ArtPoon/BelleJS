@@ -8,37 +8,7 @@
 
   <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-  <script>
-  $( function() {
-    $( "#tabs" ).tabs();
-  } );
-
-  function updateNCat(val) {
-    $( '#ncat-display' )[0].innerHTML=val;
-  }
-
-  function activateNCat(val) {
-    if (val == 'G' | val=='GI') {
-      $( '#ncat-range' )[0].disabled = false;
-    } else {
-      $( '#ncat-range' )[0].disabled = true;
-    }
-  }
-
-  function activateRelaxed(val) {
-    if (val=='uncorrelated') {
-      $( '#select-relaxed-dist' )[0].disabled = false;
-    } else {
-      $( '#select-relaxed-dist' )[0].disabled = true;
-    }
-  }
-
-  $( document ).ready(function() {
-    console.log('ready!');
-    $( '#ncat-range ').trigger("change");
-  });
-
-  </script>
+  <script src="/js/interface.js"></script>
 </head>
 
 <body>
@@ -205,37 +175,90 @@
   </div>
 
   <div id="tab-trees">
-    <table width="100%">
+    <table class="treePriorTable" width="100%">
       <caption>Tree prior shared by all tree models</caption>
       <tr>
         <td class="rightj"><label>Tree prior:</label></td>
         <td>
-          <select id="select-clock" onchange="activateRelaxed(this.value)">
+          <select id="select-treeModel" onchange="configureTreeModel(this.value)">
             <option value="constant">Coalescent: Constant Size</option>
             <option value="exponential">Coalescent: Exponential Growth</option>
             <option value="logistic">Coalescent: Logistic Growth</option>
             <option value="expansion">Coalescent: Expansion Growth</option>
-            <option value="skygrid">Coalescent: Bayesian SkyGrid</option>
-            <option value="skyride">Coalescent: GMRF Bayesian Skyride</option>
+            <!--<option value="skygrid">Coalescent: Bayesian SkyGrid</option>-->
+            <!--<option value="skyride">Coalescent: GMRF Bayesian Skyride</option>-->
             <option value="skyline">Coalescent: Bayesian Skyline</option>
+            <!--
             <option value="extended">Coalescent: Extended Bayesian Skyline Plot</option>
             <option value="yule">Speciation: Yule Process</option>
             <option value="yule-cali">Speciation: Calibrated Yule</option>
             <option value="bd">Speciation: Birth-Death Process</option>
             <option value="bd-incomplete">Speciation: Birth-Death Incomplete Sampling</option>
             <option value="bd-serial">Speciation: Birth-Death Serially Sampled</option>
+            -->
           </select>
         </td>
       </tr>
-      <tr>
-        <td class="rightj" id="clock-label"></td>
-        <td class="leftj" id="clock-input"></td>
+      
+      <tr class="parGrow">
+        <!-- for exponential, logistic, expansion -->
+        <td class='rightj'>
+          <label>Parameterization for growth:</label>
+        </td>
+        <td class='leftj'>
+          <select>
+            <option value='parGrowGR'>Growth Rate</option>
+            <option value='parGrowDT'>Doubling Time</option>
+          </select>
+        </td>
       </tr>
+      
+      <!--
+      <tr class="parSkyGrid">
+        <td class='rightj'>
+          <label>Number of parameters:</label>
+        </td>
+        <td class='leftj'>
+          <input type="number" id="skygridNumParam" value=50 min=2 max=2147483647>
+        </td>
+      </tr>
+      <tr class="parSkyGrid">
+        <td class='rightj'>
+          <label>Time at last transition point:</label>
+        </td>
+        <td class='leftj'>
+          <input type="number" id="skygridNumParam" step="any" value=null min=0 max=2147483647>
+        </td>
+      </tr>
+      -->
+      
+      <tr class="parSkyline">
+        <!-- for Bayesian Skyline -->
+        <td class='rightj'>
+          <label>Number of groups:</label>
+        </td>
+        <td class='leftj'>
+          <input type="number" id="skygridNumParam" value=50 min=2 max=2147483647>
+        </td>
+      </tr>
+      <tr class="parSkyline">
+        <td class='rightj'>
+          <label>Skyline Model:</label>
+        </td>
+        <td class='leftj'>
+          <select id="select-skyline">
+            <option value="skylinePWConst">Piecewise-constant</option>
+            <option value="skylinePWLine">Piecewise-linear</option>
+          </select>
+        </td>
+      </tr>
+      
       <tr>
         <td class="rightj"><label>Citation:</label></td>
         <div id="clock-citation"></div>
       </tr>
     </table>
+    
     <table width="100%">
       <caption>Tree Model - default</caption>
       <tr>
@@ -249,7 +272,7 @@
             <label for="UPGMA-starting-tree">UPGMA starting tree</label>
           </div>
           <div>
-            <input type="radio" id="user-starting-tree" name="startingTree" value="user">
+            <input type="radio" disabled=true id="user-starting-tree" name="startingTree" value="user">
             <label for="user-starting-tree">User-specified starting tree</label>
           </div>
         </td>
@@ -261,6 +284,7 @@
         </td>
         <td class="leftj">
           <select id="user-tree" disabled=true>
+            <option value="none">No tree loaded</option>
           </select>
         </td>
       </tr>
@@ -293,11 +317,8 @@
           <th>Description</th>
         </tr>
       </thead>
-      <tbody>
-        <tr>
-          <!-- populate based on -->
-          <td><div id="table-priors"></div></td>
-        </tr>
+      <tbody class="priorTable">
+          <!-- populate based on other inputs -->
       </tbody>
     </table>
   </div>
