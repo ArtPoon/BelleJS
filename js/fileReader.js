@@ -20,7 +20,8 @@ window.onload = function() {
 	// bind file browser to HTML5 FileReader
 	$('#id_inputFile').on('change', function (e) {
     var files = e.target.files; // FileList object
-	  var f = files[0];
+    var f = files[0];
+
     // TODO: check file MIME type, should be a plain text file
     reader.onload = fileReadComplete;
     reader.readAsText(f);

@@ -9,6 +9,7 @@
   <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
   <script src="/js/interface.js"></script>
+  <script src="/js/fileReader.js"></script>
 </head>
 
 <body>
@@ -25,8 +26,8 @@
     <li><a href="#tab-trees">Trees</a></li>
     <li><a href="#tab-states">States</a></li>
     <li><a href="#tab-priors">Priors</a></li>
-    <li><a href="#tab-priors">Operators</a></li>
-    <li><a href="#tab-priors">MCMC</a></li>
+    <li><a href="#tab-operators">Operators</a></li>
+    <li><a href="#tab-MCMC">MCMC</a></li>
   </ul>
 
   <div id="tab-partitions">
@@ -49,7 +50,9 @@
         </tr>
       </tbody>
     </table>
-    <button>+</button>
+    <label for="id_inputFile" class="custom-file-upload">+</label>
+    <input type="file" id="id_inputFile" name="inputFile"/>
+    <button onclick="removePartition()">&minus;</button>
   </div>
 
   <div id="tab-taxa">
@@ -323,6 +326,17 @@
     </table>
   </div>
 
+  <div id="tab-operators">
+    <p>
+      Not yet implemented.
+    </p>
+  </div>
+
+  <div id="tab-MCMC">
+    <p>
+      Not yet implemented.
+    </p>
+  </div>
 </div>
 <!-- end div tabs -->
 

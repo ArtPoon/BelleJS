@@ -1,3 +1,14 @@
+input[type="file"] {
+  display: none;
+}
+.custom-file-upload, button {
+  /* https://stackoverflow.com/questions/572768/styling-an-input-type-file-button */
+  border: 1px solid #ccc;
+  display: inline-block;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
 h1 {
   font-family: Cabin, Arial, sans-serif;
 }
