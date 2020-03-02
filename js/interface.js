@@ -1,11 +1,15 @@
-var gaston = {};
-
 $( function() {
   $( "#tabs" ).tabs();
 } );
 
+// partitions
 function addPartition() {
   console.log("click");
+}
+
+// sites
+function changeSubModel(val) {
+  json.beast.siteModel.substitutionModel
 }
 
 function updateNCat(val) {
@@ -52,5 +56,11 @@ $( document ).ready(function() {
   console.log('ready!');
   $( '#ncat-range' ).trigger("change");
   $( '#select-treeModel' ).trigger("change");
+  // tips
+
+  // sites
+  d3.select("#select-submodel").on("change", function() {
+    console.log(this.value);
+  });
 });
 
