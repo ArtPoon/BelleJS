@@ -60,5 +60,6 @@ function fileReadComplete (f) {
     // add last entry
     alignment.push({'header': header, 'rawseq': sequence});
     
-    console.log(alignment);
+    // update partitions table
+
 }

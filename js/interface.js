@@ -1,3 +1,5 @@
+var gaston = {};
+
 $( function() {
   $( "#tabs" ).tabs();
 } );
