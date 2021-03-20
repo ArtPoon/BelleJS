@@ -8,7 +8,6 @@
   <script src="/js/jquery-1.12.4.js"></script>
   <script src="/js/jquery-ui.js"></script>
   <script src="/js/d3.js"></script>
-  <script src="/js/data.js"></script>
   <script src="/js/interface.js"></script>
   <script src="/js/fileReader.js"></script>
 </head>
@@ -54,14 +53,12 @@
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td><div id="partitions"></div></td>
-        </tr>
+
       </tbody>
     </table>
     <label for="id_inputFile" class="custom-file-upload">+</label>
     <input type="file" id="id_inputFile" name="inputFile"/>
-    <button onclick="removePartition()">&minus;</button>
+    <button onclick="$('#tab-partitions tbody tr:last').remove();">&minus;</button>
   </div>
 
   <div id="tab-taxa">
