@@ -2,11 +2,6 @@ $( function() {
   $( "#tabs" ).tabs();
 } );
 
-// partitions
-function addPartition() {
-  console.log("click");
-}
-
 // sites
 function changeSubModel(val) {
   json.beast.siteModel.substitutionModel
@@ -33,8 +28,6 @@ function activateRelaxed(val) {
 }
 
 function configureTreeModel(val) {
-  console.log(val);
-
   var rows = $("table.treePriorTable tr");
 
   if (val=='constant') {
@@ -53,7 +46,6 @@ function configureTreeModel(val) {
 }
 
 $( document ).ready(function() {
-  console.log('ready!');
   $( '#ncat-range' ).trigger("change");
   $( '#select-treeModel' ).trigger("change");
   // tips

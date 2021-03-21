@@ -68,21 +68,43 @@
   </div>
 
   <div id="tab-tips">
-    <table width="100%">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Date</th>
-          <th>Uncertainty</th>
-          <th>Height</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><div id="tips"></div></td>
-        </tr>
-      </tbody>
-    </table>
+    <input type="checkbox" id="use_tip_dates"><label for="use_tip_dates">Use tip dates</label>
+    <span>
+      <button disabled="true">Parse Dates</button>
+      <button disabled="true">Import Dates</button>
+      <button disabled="true">Set Dates</button>
+      <button disabled="true">Clear Dates</button>
+      <button disabled="true">Set Uncertainty</button>
+    </span>
+    <span>
+      <label>Dates as:</label>
+      <select disabled="true">
+        <option value="years">Years</option>
+        <option value="months">Months</option>
+        <option value="days">Days</option>
+      </select>
+      <select disabled="true">
+        <option value="since">Since some time in the past</option>
+        <option value="before">Before the present</option>
+      </select>
+      <input type="checkbox" id="specify_origin_date" disabled="true">
+      <label for="specify_origin_date">Specify origin date:</label>
+      <input type="text" disabled="true">
+    </span>
+    <div style="width: 100%; height: 500px; overflow-y: scroll">
+      <table class="tip-table" width="100%">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Date</th>
+            <th>Uncertainty</th>
+            <th>Height</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <div id="tab-traits">
@@ -304,6 +326,7 @@
         </td>
         <td class="leftj">
           <select id="export-format" disabled=true>
+            <option>Newick</option>
           </select>
         </td>
       </tr>
@@ -339,12 +362,143 @@
   </div>
 
   <div id="tab-MCMC">
-    <p>
-      Not yet implemented.
-    </p>
+
+    <table width="100%">
+
+
+      <tr>
+        <td class="rightj">
+          <label>Length of chain:</label>
+        </td>
+        <td class="leftj">
+          <input type="text">
+        </td>
+      </tr>
+
+      <tr style="border-bottom: 1px solid black">
+        <td colspan="100%"></td>
+      </tr>
+
+      <tr>
+        <td class="rightj">
+          <label>Echo state to screen every:</label>
+        </td>
+        <td class="leftj">
+          <input type="text">
+        </td>
+      </tr>
+      <tr>
+        <td class="rightj">
+          <label>Log parameters every:</label>
+        </td>
+        <td class="leftj">
+          <input type="text">
+        </td>
+      </tr>
+
+      <tr style="border-bottom: 1px solid black">
+        <td colspan="100%"></td>
+      </tr>
+
+      <tr>
+        <td class="rightj">
+          <label>File name stem:</label>
+        </td>
+        <td class="leftj">
+          <input type="text">
+        </td>
+      </tr>
+      <tr>
+        <td class="rightj">
+        </td>
+        <td class="leftj">
+          <input type="checkbox" id="add_txt_suffix">
+          <label for="add_txt_suffix">Add .txt suffix</label>
+        </td>
+      </tr>
+
+      <tr style="border-bottom: 1px solid black">
+        <td colspan="100%"></td>
+      </tr>
+
+      <tr>
+        <td class="rightj">
+          <label>Log file name:</label>
+        </td>
+        <td class="leftj">
+          <input type="text">
+        </td>
+      </tr>
+      <tr>
+        <td class="rightj">
+          <label>Trees file name:</label>
+        </td>
+        <td class="leftj">
+          <input type="text">
+        </td>
+      </tr>
+      <tr>
+        <td class="rightj">
+        </td>
+        <td class="leftj">
+          <input type="checkbox" id="create_tree_log">
+          <label for="create_tree_log">Create tree log file with branch length in substitutions:</label>
+        </td>
+      </tr>
+      <tr>
+        <td class="rightj">
+          <label>Substitutions trees file name:</label>
+        </td>
+        <td class="leftj">
+          <input type="text">
+        </td>
+      </tr>
+      <tr>
+        <td class="rightj">
+        </td>
+        <td class="leftj">
+          <input type="checkbox" id="create_ops_file">
+          <label for="create_ops_file">Create operator analysis file:</label>
+        </td>
+      </tr>
+      <tr>
+        <td class="rightj">
+          <label>Operator analysis file name:</label>
+        </td>
+        <td class="leftj">
+          <input type="text">
+        </td>
+      </tr>
+
+      <tr style="border-bottom: 1px solid black">
+        <td colspan="100%"></td>
+      </tr>
+      <tr>
+        <td class="rightj">
+        </td>
+        <td class="leftj">
+          <input type="checkbox" id="sample_prior_only">
+          <label for="sample_prior_only">Sample from prior only - create empty alignment</label>
+        </td>
+      </tr>
+      <tr style="border-bottom: 1px solid black">
+        <td colspan="100%"></td>
+      </tr>
+
+
+    </table>
   </div>
 </div>
 <!-- end div tabs -->
+
+<div class="footer" style="display: flex;">
+<div style="width: 200px; display: flex; flex-direction: row;">
+  Data: <div class="data" id="data_num_taxa">0</div> taxa, <div class="data" id="data_num_parts">0</div> partition
+</div>
+<div style="position: absolute; right: 10px;">
+  <button>&#9881; Generate BEAST file...</button>
+</div>
+</div>
 
 </body>
 

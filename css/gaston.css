@@ -37,6 +37,16 @@ td.leftj {
   padding: 6px;
 }
 
+.tip-table thead th {
+  position: sticky;
+  top: 0;
+  background: #fff;
+}
+
+.tip-table tr:nth-child(odd) {
+  background-color: #e6e6fa;
+}
+
 .container {
   display: table;
   width: 100%;
@@ -46,4 +56,13 @@ span {
   display: block;
   overflow: hidden;
   padding: 0 4px 0 6px;
+}
+
+div.data {
+  padding: 0 3px 3px 0;  /* top | right | bottom | left */
+}
+
+div.footer {
+  margin: 6px;
+  font-family: Helvetica, sans-serif;
 }

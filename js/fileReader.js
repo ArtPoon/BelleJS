@@ -67,8 +67,34 @@ function fileReadComplete (f) {
   $("#tab-partitions tbody")
       .append(`<tr><td>${filename.split('.')[0]}</td><td>${filename}</td><td>${alignment.length}</td><td>${maxlen}</td><td>nucleotide</td><td>default</td><td>default</td><td>default</td></tr>`);
 
-  // populate tips table
-  for (let i = 0; i < alignment.length; i++) {
-    
-  }
+  // trigger update events in other panels
+  updateTips();
+}
+
+
+function updateTips() {
+  // http://bl.ocks.org/jfreels/6734025
+  let tips_table = d3.select("#tab-tips tbody"),
+      columns = ['Name', 'Date', 'Uncertainty', 'Height'],
+      tip_data = alignment.map(function(row) {
+        return {'Name': row['header'], 'Date': 0.0, 'Uncertainty': 0.0, 'Height': 0.0};
+      });
+
+  // make row for each sequence
+  let rows = tips_table.selectAll("tr")
+      .data(tip_data)
+      .enter()
+      .append("tr");
+
+  let cells = rows.selectAll("td")
+      .data(function(row) {
+        return columns.map(function(column) {
+          return {column: column, value: row[column]};
+        })
+      })
+      .enter()
+      .append("td")
+      .text( function(d) {
+        return(d.value);
+      });
 }
