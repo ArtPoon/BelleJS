@@ -62,10 +62,14 @@ function fileReadComplete (f) {
   // add last entry
   alignment.push({'header': header, 'rawseq': sequence});
 
-  // update partitions table
+
+  // clear table rows
+  $("#part-table tbody > tr").remove();
   // TODO: detect nucleotide/amino acid
+
+  // update partitions table
   $("#tab-partitions tbody")
-      .append(`<tr><td>${filename.split('.')[0]}</td><td>${filename}</td><td>${alignment.length}</td><td>${maxlen}</td><td>nucleotide</td><td>default</td><td>default</td><td>default</td></tr>`);
+      .append(`<tr style="vertical-align: top; "><td>${filename.split('.')[0]}</td><td>${filename}</td><td>${alignment.length}</td><td>${maxlen}</td><td>nucleotide</td><td>default</td><td>default</td><td>default</td></tr>`);
 
   // trigger update events in other panels
   updateTips();
