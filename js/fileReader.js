@@ -73,11 +73,16 @@ function fileReadComplete (f) {
 
   // trigger update events in other panels
   updateTips();
+
+  //Enable Parse dates
+  $("#Parser").removeAttr("disabled") 
+
 }
 
 
 function updateTips() {
   // http://bl.ocks.org/jfreels/6734025
+  $("#Parser").removeAttr("disabled") 
   let tips_table = d3.select("#tab-tips tbody"),
       columns = ['Name', 'Date', 'Uncertainty', 'Height'],
       tip_data = alignment.map(function(row) {

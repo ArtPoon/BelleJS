@@ -5,11 +5,11 @@
   <link rel="stylesheet" href="css/jquery-ui.css">  <!-- v1.12.1 -->
   <link rel="stylesheet" href="css/style.css">
 
-  <script src="/js/jquery-1.12.4.js"></script>
-  <script src="/js/jquery-ui.js"></script>
-  <script src="/js/d3.js"></script>
-  <script src="/js/interface.js"></script>
-  <script src="/js/fileReader.js"></script>
+  <script src="js/jquery-1.12.4.js"></script>
+  <script src="js/jquery-ui.js"></script>
+  <script src="js/d3.js"></script>
+  <script src="js/interface.js"></script>
+  <script src="js/fileReader.js"></script>
 </head>
 
 <body>
@@ -81,11 +81,43 @@
   <div id="tab-tips">
     <input type="checkbox" id="use_tip_dates"><label for="use_tip_dates">Use tip dates</label>
     <span>
-      <button disabled="true">Parse Dates</button>
+      <button id= "Parser" disabled="true">Parse Dates</button>
       <button disabled="true">Import Dates</button>
       <button disabled="true">Set Dates</button>
       <button disabled="true">Clear Dates</button>
       <button disabled="true">Set Uncertainty</button>
+      <div id="dialog-form" title="Parse Dates" style="display: none">
+        <p class="validateTips">Choose how to parse the dates below</p>
+       
+        <form>
+          <fieldset>
+            <label for="parser_order">Defined just by its order</label>
+            <input type="radio" name="parser_order" id="parser_order_only" value="parser_order" ><br>
+            <hr>
+            <label for="parser_order_prefix">Defined just by its prefix and its order</label>
+            <input type="radio" name="parser_order" id="parser_order_prefix" value="parser_order_prefix" ><br>
+            <label for="parser_order_choice">Order</label>
+            <select name="parser_order_choice" id="parser_order_choice">
+              <option value="0">First</option>   
+              <option value="1">Second</option>   
+              <option value="2">Third</option>   
+              <option value="3">Fourth</option>   
+              <option value="-4">Fourth from Last</option>   
+              <option value="-3">Third from Last</option>   
+              <option value="-2">Second form Last</option>   
+              <option value="-1">Last</option>
+            </select>
+            <br>
+            <label for="delim">Delimeter</label>
+            <input type="text" name="delimeter" id="delimeter">
+            <hr>
+       
+            <!-- Allow form submission with keyboard without duplicating the dialog button -->
+            <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+          </fieldset>
+        </form>
+      </div>
+       
     </span>
     <span>
       <label>Dates as:</label>
