@@ -74,9 +74,7 @@ function fileReadComplete (f) {
   // trigger update events in other panels
   updateTips();
 
-  //Enable Parse dates
-  $("#Parser").removeAttr("disabled") 
-
+ 
 }
 
 

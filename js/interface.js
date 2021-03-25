@@ -60,8 +60,23 @@ $( document ).ready(function() {
   $("#parser_order_only").change(swap_parseOpts);
   swap_parseOpts()
 
+  //Active tip labels
+  $('#use_tip_dates').change(Unlock_tipOpts)
+ 
+
 });
 
+function Unlock_tipOpts(){
+  //If selected, enable buttons
+  $('#Parser').removeClass()
+  if (document.getElementById('use_tip_dates').checked){
+      $("#Parser").removeAttr("disabled")
+  }
+  else{
+    $("#Parser").attr("disabled", true)
+  }
+
+}
 
 
 function swap_parseOpts(){
@@ -75,14 +90,12 @@ function swap_parseOpts(){
   }
 }
 
-function addDates(table, dates){
-
-}
 
 
 $( function() {
 
   function parseDates(){
+    //:TODO: Add 'just by its order date processing algorithm'
     if ($('#parser_order_prefix').is(":checked")){
       //Prefix and order
       //Function to parse dates based on field values
@@ -112,8 +125,6 @@ $( function() {
                   }
                   return row
                   });    
-  console.log(new_data)
-
   //Change tip table with new data
   let tips_table = d3.select("#tab-tips tbody"),
       columns = ['Name', 'Date', 'Uncertainty', 'Height']
