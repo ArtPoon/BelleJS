@@ -118,24 +118,20 @@ $( function() {
   let tips_table = d3.select("#tab-tips tbody"),
       columns = ['Name', 'Date', 'Uncertainty', 'Height']
 
-  // make row for each sequence
   let rows = tips_table.selectAll("tr")
       .data(new_data)
-      .enter()
-      .append("tr");
-
+  //Clear old tds
   let cells = rows.selectAll("td")
       .data(function(row) {
         return columns.map(function(column) {
           return {column: column, value: row[column]};
         })
       })
-      .enter()
-      .append("td")
       .text( function(d) {
         return(d.value);
-      });
-
+      })
+      .exit()
+      .remove()
 
     dialog.dialog( "close" );
   }
