@@ -94,11 +94,13 @@
        
         <form>
           <fieldset>
+            <!--  ## Hidden for now
             <label for="parser_order">Defined just by its order</label>
             <input type="radio" name="parser_order" id="parser_order_only" value="parser_order" ><br>
+             -->
             <hr>
-            <label for="parser_order_prefix">Defined just by its prefix and its order</label>
-            <input type="radio" name="parser_order" id="parser_order_prefix" value="parser_order_prefix" ><br>
+            <label for="parser_order_prefix">Defined just by its delimeter and its order</label>
+            <input type="radio" name="parser_order" id="parser_order_prefix" value="parser_order_prefix" checked="checked" ><br> <!-- Remove checked default later! -->
             <label for="parser_order_choice">Order</label>
             <select name="parser_order_choice" id="parser_order_choice">
               <option value="0">First</option>   
@@ -107,11 +109,11 @@
               <option value="3">Fourth</option>   
               <option value="-4">Fourth from Last</option>   
               <option value="-3">Third from Last</option>   
-              <option value="-2">Second form Last</option>   
+              <option value="-2">Second from Last</option>   
               <option value="-1">Last</option>
             </select>
             <br>
-            <label for="delim">Delimeter</label>
+            <label for="delim">Delimeter </label>
             <input type="text" name="delimeter" id="delimeter">
             <hr>
        
@@ -119,6 +121,9 @@
             <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
           </fieldset>
         </form>
+        <p class="validateTips"><i>Order is where the date is located <br>i.e. "Class" is second from last in "Kingdom_Phylum_Class_Order" </i></p>
+        <p class="validateTips"><i>Delimeters are what seperate your data <br>i.e. "_" is the delimeter for "Kingdom_Phylum_Class_Order" </i></p>
+
       </div>
        
     </span>

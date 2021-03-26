@@ -90,7 +90,9 @@ function swap_parseOpts(){
   }
 }
 
-
+function daysIntoYear(date){
+  return (Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) - Date.UTC(date.getFullYear(), 0, 0)) / 24 / 60 / 60 / 1000;
+}
 
 $( function() {
 
@@ -112,16 +114,16 @@ $( function() {
                     });
     }
 
-
+  var days = new Date().getFullYear() % 4 == 0 ? 366 : 365;
   //Assuming dates are parsed as dates = [{name:"abcd_yyyy/mm/dd", Value: 'date'}, {...}]
   //Generate tip lengths
 
   max_date = d3.max(dates, d=> d.date)
   new_data = dates.map( function(x){
                   row = { "Name": x["header"],
-                          "Date": x["date"],
+                          "Date": new Date(x["date"]).getFullYear() + daysIntoYear(new Date(x["date"]))/ (new Date(x["date"]).getFullYear() % 4 == 0 ? 366 : 365),
                           'Uncertainty': 0.0,
-                          "Height": (Date.parse(max_date) - Date.parse(x["date"])) / 86400000 / 365
+                          "Height": (Date.parse(max_date) - Date.parse(x["date"])) / 86400000 / (new Date(x["date"]).getFullYear() % 4 == 0 ? 366 : 365)
                   }
                   return row
                   });    
