@@ -10,7 +10,8 @@
   <script src="js/d3.js"></script>
   <script src="js/interface.js"></script>
   <script src="js/fileReader.js"></script>
-  <script src="js/xml-js.js"></script>
+  <script src="js/fileWriter.js"></script>
+  <script src="js/FileSaver.js"></script>
 </head>
 
 <body>
@@ -32,7 +33,7 @@
   function reqListener() { beast_xml = this.responseXML; }
   var oReq = new XMLHttpRequest();
   oReq.addEventListener("load", reqListener);
-  oReq.open("GET", "/examples/YFV.xml");
+  oReq.open("GET", "/data/default.xml");
   oReq.send();
 </script>
 
@@ -408,29 +409,24 @@
   </div>
 
   <div id="tab-MCMC">
-
     <table width="100%">
-
-
       <tr>
         <td class="rightj">
           <label>Length of chain:</label>
         </td>
         <td class="leftj">
-          <input type="text">
+          <input type="number" min="0" value="10000000">
         </td>
       </tr>
 
-      <tr style="border-bottom: 1px solid black">
-        <td colspan="100%"></td>
-      </tr>
+      <tr style="border-bottom: 1px solid black"><td colspan="100%"></td></tr>
 
       <tr>
         <td class="rightj">
           <label>Echo state to screen every:</label>
         </td>
         <td class="leftj">
-          <input type="text">
+          <input type="number" min="0" value="1000">
         </td>
       </tr>
       <tr>
@@ -438,13 +434,11 @@
           <label>Log parameters every:</label>
         </td>
         <td class="leftj">
-          <input type="text">
+          <input type="number" min="0" value="1000">
         </td>
       </tr>
 
-      <tr style="border-bottom: 1px solid black">
-        <td colspan="100%"></td>
-      </tr>
+      <tr style="border-bottom: 1px solid black"><td colspan="100%"></td></tr>
 
       <tr>
         <td class="rightj">
@@ -496,7 +490,7 @@
           <label>Substitutions trees file name:</label>
         </td>
         <td class="leftj">
-          <input type="text">
+          <input type="text" disabled>
         </td>
       </tr>
       <tr>
@@ -542,7 +536,7 @@
   Data: <div class="data" id="data_num_taxa">0</div> taxa, <div class="data" id="data_num_parts">0</div> partition
 </div>
 <div style="position: absolute; right: 10px;">
-  <button>&#9881; Generate BEAST file...</button>
+  <button onclick="export_xml();">&#9881; Generate BEAST file...</button>
 </div>
 </div>
 

@@ -104,34 +104,33 @@ $( function() {
       if (target_field < 0 ){
         target_field = alignment[0]['header'].split(delimeter).length + parseInt(target_field)
       }
-      dates = alignment.map( function(x){
-                    row = { "header": x['header'], 
-                            "date": x['header'].split(delimeter)[target_field]
-                          } 
-                    return row
-                    });
+      for (let i=0; i<alignment.length; i++) {
+        alignment[i]["date"] = alignment[i]['header'].split(delimeter)[target_field];
+      }
     }
 
 
   //Assuming dates are parsed as dates = [{name:"abcd_yyyy/mm/dd", Value: 'date'}, {...}]
   //Generate tip lengths
 
-  max_date = d3.max(dates, d=> d.date)
-  new_data = dates.map( function(x){
-                  row = { "Name": x["header"],
-                          "Date": x["date"],
-                          'Uncertainty': 0.0,
-                          "Height": (Date.parse(max_date) - Date.parse(x["date"])) / 86400000 / 365
-                  }
-                  return row
-                  });    
-  //Change tip table with new data
+  let max_date = d3.max(alignment, d=> d.date),
+      new_data = alignment.map(
+        function(x) {
+          return { "Name": x["header"],
+                  "Date": x["date"],
+                  'Uncertainty': 0.0,
+                  "Height": (Date.parse(max_date) - Date.parse(x["date"])) / 86400000 / 365
+          };
+        });
+
+  // Change tip table with new data
   let tips_table = d3.select("#tab-tips tbody"),
       columns = ['Name', 'Date', 'Uncertainty', 'Height']
 
   let rows = tips_table.selectAll("tr")
-      .data(new_data)
-  //Clear old tds
+      .data(new_data);
+
+  // Clear old tds
   let cells = rows.selectAll("td")
       .data(function(row) {
         return columns.map(function(column) {
