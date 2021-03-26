@@ -90,7 +90,9 @@ function swap_parseOpts(){
   }
 }
 
-
+function daysIntoYear(date){
+  return (Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) - Date.UTC(date.getFullYear(), 0, 0)) / 24 / 60 / 60 / 1000;
+}
 
 $( function() {
 
@@ -109,21 +111,20 @@ $( function() {
       }
     }
 
-
+  var days = new Date().getFullYear() % 4 == 0 ? 366 : 365;
   //Assuming dates are parsed as dates = [{name:"abcd_yyyy/mm/dd", Value: 'date'}, {...}]
   //Generate tip lengths
 
   let max_date = d3.max(alignment, d=> d.date),
-      new_data = alignment.map(
-        function(x) {
-          return { "Name": x["header"],
-                  "Date": x["date"],
-                  'Uncertainty': 0.0,
-                  "Height": (Date.parse(max_date) - Date.parse(x["date"])) / 86400000 / 365
-          };
-        });
+      new_data = alignment.map( function(x) {
+        return {"Name": x["header"],
+          "Date": new Date(x["date"]).getFullYear() + daysIntoYear(new Date(x["date"]))/ (new Date(x["date"]).getFullYear() % 4 == 0 ? 366 : 365),
+          'Uncertainty': 0.0,
+          "Height": (Date.parse(max_date) - Date.parse(x["date"])) / 86400000 / (new Date(x["date"]).getFullYear() % 4 == 0 ? 366 : 365)
+        };
+      })
 
-  // Change tip table with new data
+  //Change tip table with new data
   let tips_table = d3.select("#tab-tips tbody"),
       columns = ['Name', 'Date', 'Uncertainty', 'Height']
 
