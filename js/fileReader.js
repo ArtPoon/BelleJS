@@ -74,7 +74,10 @@ function fileReadComplete (f) {
   // trigger update events in other panels
   updateTips();
 
- 
+  let stem = filename.split('.')[0];
+  $("#filename_stem").val(stem);
+  $("#log_file_name").val(stem+'.log');
+  $("#trees_file_name").val(stem+'.trees');
 }
 
 

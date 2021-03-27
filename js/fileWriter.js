@@ -1,3 +1,9 @@
+/**
+ * export_xml
+ * Bind event handler to "Generate BEAST XML" button
+ * Map values of input elements to populate XML template, serialize
+ * and write the result to a file.
+ */
 function export_xml() {
   // transfer sequence alignment
   let beast = beast_xml.children[0],
@@ -21,7 +27,12 @@ function export_xml() {
     seq_taxon.setAttribute("idref", alignment[i]['header']);
 
     // setting textContent wipes out all child nodes
-    seq.textContent = alignment[i]["rawseq"];
+    if ($("#sample_prior_only")[0].checked) {
+      seq.textContent = "???";
+    }
+    else {
+      seq.textContent = alignment[i]["rawseq"];
+    }
     seq.appendChild(seq_taxon);
     aln.appendChild(seq);
   }
@@ -31,5 +42,5 @@ function export_xml() {
 
   let blob = new Blob([xmlString],
       {type: "text/plain;charset=utf-8"});
-  saveAs(blob, "test.xml");
+  saveAs(blob, filename+".xml");
 }

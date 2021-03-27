@@ -447,71 +447,70 @@
 
       <tr>
         <td class="rightj">
-          <label>File name stem:</label>
+          <label for="filename_stem">File name stem:</label>
         </td>
         <td class="leftj">
-          <input type="text">
+          <input id="filename_stem" type="text">
         </td>
       </tr>
       <tr>
         <td class="rightj">
         </td>
         <td class="leftj">
-          <input type="checkbox" id="add_txt_suffix">
+          <!-- TODO: checking this box appends ".txt" to all filenames -->
+          <input type="checkbox" id="add_txt_suffix" disabled>
           <label for="add_txt_suffix">Add .txt suffix</label>
         </td>
       </tr>
 
-      <tr style="border-bottom: 1px solid black">
-        <td colspan="100%"></td>
-      </tr>
+      <tr style="border-bottom: 1px solid black"><td colspan="100%"></td></tr>
 
       <tr>
         <td class="rightj">
-          <label>Log file name:</label>
+          <label for="log_file_name">Log file name:</label>
         </td>
         <td class="leftj">
-          <input type="text">
+          <input id="log_file_name" type="text">
         </td>
       </tr>
       <tr>
         <td class="rightj">
-          <label>Trees file name:</label>
+          <label for="trees_file_name">Trees file name:</label>
         </td>
         <td class="leftj">
-          <input type="text">
+          <input id="trees_file_name" type="text">
         </td>
       </tr>
       <tr>
         <td class="rightj">
         </td>
         <td class="leftj">
-          <input type="checkbox" id="create_tree_log">
+          <input type="checkbox" id="create_tree_log" disabled>
           <label for="create_tree_log">Create tree log file with branch length in substitutions:</label>
         </td>
       </tr>
       <tr>
         <td class="rightj">
-          <label>Substitutions trees file name:</label>
+          <label for="subtrees_file_name">Substitutions trees file name:</label>
         </td>
         <td class="leftj">
-          <input type="text" disabled>
+          <input id="subtrees_file_name" type="text" disabled>
         </td>
       </tr>
       <tr>
         <td class="rightj">
         </td>
         <td class="leftj">
-          <input type="checkbox" id="create_ops_file">
+          <input type="checkbox" id="create_ops_file" disabled>
           <label for="create_ops_file">Create operator analysis file:</label>
         </td>
       </tr>
       <tr>
         <td class="rightj">
-          <label>Operator analysis file name:</label>
+          <label for="ops_file_name">Operator analysis file name:</label>
         </td>
         <td class="leftj">
-          <input type="text">
+          <input id="ops_file_name" type="text" disabled>
         </td>
       </tr>
 
