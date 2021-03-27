@@ -1,48 +1,54 @@
 var bound_default = "[0, ∞]";
+
 function createLogNormal() {
     const obj = {};
     obj.initial=2.0;
     obj.mu=1.0;
     obj.sigma=1.25;
     obj.offset=0.0;
+    obj.str = `LogNormal [${obj.mu}, ${obj.sigma}], initial=${obj.initial}`;
     return obj;
 }
 
-function createInverse() {
-    const obj = {};
-    obj.initial=1;
-    return obj;
-}
-
-function createGamma(shape=0.5, scale=2) {
-    const obj = {};
-    obj.initial=1.0;
-    obj.shape=shape;
-    obj.scale=scale;
-    obj.offset=0.0;
-    return obj;
-}
-
-function createLaplace(initial=0.1) {
+function createInverse(initial=1.0) {
+    // reciprocal distribution
+    // used for constant population size under coalescent
     const obj = {};
     obj.initial=initial;
-    obj.mean=0.0;
-    obj.scale=1.0;
-    return obj;    
-    
+    return obj;
 }
 
-function createFixedValue() {
+function createGamma(initial=2.0, shape=0.5, scale=2, offset=0.0) {
     const obj = {};
-    obj.initial=1;
+    obj.initial=initial;
+    obj.shape=shape;
+    obj.scale=scale;
+    obj.offset=offset;
+    return obj;
+}
+
+function createLaplace(initial=0.1, mean=0.0, scale=1.0) {
+    const obj = {};
+    obj.initial=initial;
+    obj.mean=mean;
+    obj.scale=scale;
+
+    return obj;
+}
+
+function createFixedValue(initial=1.0) {
+    const obj = {};
+    obj.initial = initial;
+    obj.str = `Fixed value, value=${initial}`;
     return obj; 
 }
 
-function createUniform(lower=0, upper=1, initial=0.5) {
+function createUniform(initial=0.5, lower=0, upper=1) {
     const obj = {};
     obj.initial=initial;
-    obj.upper=upper;
     obj.lower=lower;
+    obj.upper=upper;
+    obj.str = `Uniform [${obj.lower}, ${obj.upper}], initial=${obj.initial}`;
     return obj;   
 }
 
@@ -51,12 +57,14 @@ function createExponential(initial=0.5, mean=0.5, offset=0) {
     obj.initial=initial;
     obj.mean=mean;
     obj.offset=offset;
+    obj.str = `Exponential [${obj.mean}], initial=${obj.initial}`;
     return obj;
 }
 
-function createDirichlet() {
+function createDirichlet(initial=1.0) {
     const obj = {};
-    obj.initial = 1;
+    obj.initial = initial;
+    obj.str = `Dirichlet [${obj.initial}, ${obj.initial}]`;
     return obj;
 }
 
