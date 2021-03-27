@@ -177,8 +177,8 @@
           <select id="select-submodel">
             <option value="JC">JC</option>
             <option value="HKY">HKY</option>
-            <option value="GTR">GTR</option>
-            <option value="TN93">TN93</option>
+            <option value="GTR" disabled>GTR</option>
+            <option value="TN93" disabled>TN93</option>
           </select>
         </td>
       </tr>
@@ -197,7 +197,7 @@
       <tr>
         <td class="rightj"><label>Site Heterogeneity Model</label></td>
         <td>
-          <select id="select-sitehetero" onchange="activateNCat(this.value)">
+          <select id="select-sitehetero" disabled onchange="activateNCat(this.value)">
             <option value="None">None</option>
             <option value="G">Gamma</option>
             <option value="I">Invariant Sites</option>
@@ -210,7 +210,7 @@
       <tr>
         <td class="rightj"><label>Number of Gamma Categories</label></td>
         <td>
-          <input type="range" id="ncat-range" min="4" max="10" disabled="true" onchange="updateNCat(this.value)">
+          <input type="range" id="ncat-range" min="4" max="10" disabled onchange="updateNCat(this.value)">
           <div id="ncat-display"></div>
         </td>
       </tr>
@@ -220,9 +220,9 @@
       </tr>
 
       <tr>
-        <td class="rightj"><label>Partition into codon positions:</label></td>
+        <td class="rightj"><label for="select-codonpos">Partition into codon positions:</label></td>
         <td>
-          <select id="select-codonpos">
+          <select id="select-codonpos" disabled>
             <option value="Off">Off</option>
             <option value="2">2 partitions: positions (1+2), 3</option>
             <option value="3">3 partitions: positions 1, 2, 3</option>
@@ -241,8 +241,8 @@
           <select id="select-clock" onchange="activateRelaxed(this.value)">
             <option value="strict">Strict clock</option>
             <option value="uncorrelated">Uncorrelated relaxed clock</option>
-            <option value="random-local">Random local clock</option>
-            <option value="fixed-local">Fixed local clock</option>
+            <option value="random-local" disabled>Random local clock</option>
+            <option value="fixed-local" disabled>Fixed local clock</option>
           </select>
         </td>
       </tr>
@@ -250,10 +250,10 @@
       <tr>
         <td class="rightj"><label>Clock type:</label></td>
         <td>
-          <select id="select-relaxed-dist" disabled=true>
+          <select id="select-relaxed-dist" disabled>
             <option value="lognormal">Lognormal</option>
-            <option value="gamma">Gamma</option>
-            <option value="exponential">Exponential</option>
+            <option value="gamma" disabled>Gamma</option>
+            <option value="exponential" disabled>Exponential</option>
           </select>
         </td>
       </tr>
@@ -268,9 +268,9 @@
         <td>
           <select id="select-treeModel" onchange="configureTreeModel(this.value)">
             <option value="constant">Coalescent: Constant Size</option>
-            <option value="exponential">Coalescent: Exponential Growth</option>
-            <option value="logistic">Coalescent: Logistic Growth</option>
-            <option value="expansion">Coalescent: Expansion Growth</option>
+            <option value="exponential" disabled>Coalescent: Exponential Growth</option>
+            <option value="logistic" disabled>Coalescent: Logistic Growth</option>
+            <option value="expansion" disabled>Coalescent: Expansion Growth</option>
             <!--<option value="skygrid">Coalescent: Bayesian SkyGrid</option>-->
             <!--<option value="skyride">Coalescent: GMRF Bayesian Skyride</option>-->
             <option value="skyline">Coalescent: Bayesian Skyline</option>

@@ -52,7 +52,7 @@ $( document ).ready(function() {
 
   // sites
   d3.select("#select-submodel").on("change", function() {
-    console.log(this.value);
+    //console.log(this.value);
   });
 
   //parser
