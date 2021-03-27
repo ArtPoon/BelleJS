@@ -75,8 +75,8 @@ function Unlock_tipOpts(){
   parser.attr("disabled", unlock);
   $("#dates_as_units").attr("disabled", unlock);
   $("#dates_as_direction").attr("disabled", unlock);
-  $("#specify_origin_date").attr("disabled", unlock);
-  $("#origin_date").attr("disabled", unlock);
+  //$("#specify_origin_date").attr("disabled", unlock);
+  //$("#origin_date").attr("disabled", unlock);
 }
 
 

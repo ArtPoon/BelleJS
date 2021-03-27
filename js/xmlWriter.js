@@ -20,12 +20,23 @@ function export_xml() {
   for (let i=0; i < alignment.length; i++) {
     let taxon = document.createElement('taxon');
     taxon.setAttribute("id", alignment[i]['header']);
+
+    // apply tip date settings
+    if ($("#use_tip_dates")[0].checked) {
+      let date = document.createElement('date');
+      date.setAttribute("value", alignment[i]['date']);
+      if ($("#dates_as_direction").val() === 'since') {
+        date.setAttribute("direction", "forwards");
+      }
+      else {
+        date.setAttribute("direction", "backwards");
+      }
+      date.setAttribute("units", $("#dates_as_units").val());
+      taxon.appendChild(date);
+    }
+
     taxa.appendChild(taxon);
 
-    let date = document.createElement('date');
-    date.setAttribute("value", alignment[i]['date']);
-    if ($("#dates_as_direction"))
-    date.setAttribute("direction", );
 
     let seq = document.createElement('sequence'),
         seq_taxon = document.createElement('taxon');

@@ -60,7 +60,7 @@ function fileReadComplete (f) {
     }
   }
   // add last entry
-  alignment.push({'header': header, 'rawseq': sequence});
+  alignment.push({'header': header, 'rawseq': sequence, 'date': 0.});
 
 
   // clear table rows
