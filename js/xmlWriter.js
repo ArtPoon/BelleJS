@@ -53,7 +53,10 @@ function export_xml() {
     aln.appendChild(seq);
   }
 
-  //
+  // add substitution model
+  
+
+  // serialize XML to write to file
   let serializer = new XMLSerializer();
   let xmlString = serializer.serializeToString(beast_xml);
 
