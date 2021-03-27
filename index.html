@@ -9,6 +9,7 @@
   <script src="js/jquery-1.12.4.js"></script>
   <script src="js/jquery-ui.js"></script>
   <script src="js/d3.js"></script>
+  <script src="js/priorGenerator.js"></script>
   <script src="js/interface.js"></script>
   <script src="js/fileReader.js"></script>
   <script src="js/xmlWriter.js"></script>
@@ -49,7 +50,7 @@
     <li><a href="#tab-clocks">Clocks</a></li>
     <li><a href="#tab-trees">Trees</a></li>
     <li><a href="#tab-states">States</a></li>
-    <li><a href="#tab-priors">Priors</a></li>
+    <li id="priors-tab"><a href="#tab-priors">Priors</a></li>
     <li><a href="#tab-operators">Operators</a></li>
     <li><a href="#tab-MCMC">MCMC</a></li>
   </ul>
@@ -248,7 +249,7 @@
       </tr>
 
       <tr>
-        <td class="rightj"><label>Clock type:</label></td>
+        <td class="rightj"><label>Relaxed Distribution:</label></td>
         <td>
           <select id="select-relaxed-dist" disabled>
             <option value="lognormal">Lognormal</option>
@@ -292,7 +293,7 @@
           <label>Parameterization for growth:</label>
         </td>
         <td class='leftj'>
-          <select>
+          <select id="select-parGrow">
             <option value='parGrowGR'>Growth Rate</option>
             <option value='parGrowDT'>Doubling Time</option>
           </select>
@@ -395,7 +396,7 @@
   </div>
 
   <div id="tab-priors">
-    <table width="100%">
+    <table id="priorTable" width="100%">
       <thead>
         <tr>
           <th>Parameter</th>
@@ -404,9 +405,6 @@
           <th>Description</th>
         </tr>
       </thead>
-      <tbody class="priorTable">
-          <!-- populate based on other inputs -->
-      </tbody>
     </table>
   </div>
 
