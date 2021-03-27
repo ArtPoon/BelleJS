@@ -201,7 +201,7 @@ var parameters = [
     },
     {
         parameter: "skyline.popSize",
-        obj: createUniform(lower=0, upper=1E100, initial=1),
+        obj: createUniform(initial=1, lower=0, upper=1E100),
         description: "Bayesian Skyline population sizes"
     }
 ];
