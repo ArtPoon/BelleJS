@@ -174,5 +174,24 @@ $( function() {
   $( "#Parser" ).button().on( "click", function() {
     dialog.dialog( "open" );
   });
+
+  $('#priors-tab').on("click", function() {
+    // Remove Table
+    var priors_table = d3.select("#priorTable")
+
+    priors_table.selectAll('tbody').remove();
+    var details = getPriorValues();
+    
+    priors_table.append('tbody')
+        .selectAll('tr')
+        .data(details).enter()
+        .append("tr")
+        .selectAll("td")
+        .data(function(d) { return d; }).enter()
+        .append("td")
+        .text(function(d) { return d; })
+        .attr("class", "leftj");
+  });
+
 } );
 
