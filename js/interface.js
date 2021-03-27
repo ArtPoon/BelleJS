@@ -183,7 +183,7 @@ $( function() {
 
   $('#priors-tab').on("click", function() {
     // Remove Table
-    var priors_table = d3.select("#priorTable")
+    var priors_table = d3.select("#priorTable");
 
     priors_table.selectAll('tbody').remove();
     var details = getPriorValues();

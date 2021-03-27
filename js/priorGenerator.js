@@ -1,3 +1,4 @@
+var bound_default = [0, Infinity]
 var priors;  //bound_default = "[0, ∞]";
 
 
@@ -20,6 +21,7 @@ function createLogNormal(name, initial=2.0, mu=1.0, sigma=1.25, offset=0.0, lowe
     obj.sigma = sigma;
     obj.offset = offset;
     obj.str = `LogNormal [${obj.mu}, ${obj.sigma}], initial=${obj.initial}`;
+    obj.bound = bound_default;
     return obj;
 }
 
@@ -28,6 +30,7 @@ function createInverse(initial=1.0) {
     // used for constant population size under coalescent
     const obj = {};
     obj.initial=initial;
+    obj.bound = bound_default;
     obj.str = `1/x, initial=${obj.initial}`;
     return obj;
 }
@@ -39,6 +42,7 @@ function createGamma(initial=2.0, shape=0.5, scale=2, offset=0.0) {
     obj.scale = scale;
     obj.offset = offset;
     obj.str = `Gamma [${obj.shape}, ${obj.scale}], initial=${obj.initial}`;
+    obj.bound = bound_default;
     return obj;
 }
 
@@ -48,7 +52,7 @@ function createLaplace(initial=0.1, mean=0.0, scale=1.0) {
     obj.mean = mean;
     obj.scale = scale;
     obj.str = `Laplace [${obj.mean}, ${obj.scale}], initial=${obj.initial}`;
-
+    obj.bound = bound_default;
     return obj;
 }
 
@@ -56,6 +60,7 @@ function createFixedValue(initial=1.0) {
     const obj = {};
     obj.initial = initial;
     obj.str = `Fixed value, value=${initial}`;
+    obj.bound = bound_default;
     return obj; 
 }
 
@@ -65,6 +70,7 @@ function createUniform(initial=0.5, lower=0, upper=1) {
     obj.lower=lower;
     obj.upper=upper;
     obj.str = `Uniform [${obj.lower}, ${obj.upper}], initial=${obj.initial}`;
+    obj.bound = [lower, upper];
     return obj;   
 }
 
@@ -74,6 +80,7 @@ function createExponential(initial=0.5, mean=0.5, offset=0) {
     obj.mean=mean;
     obj.offset=offset;
     obj.str = `Exponential [${obj.mean}], initial=${obj.initial}`;
+    obj.bound = bound_default;
     return obj;
 }
 
@@ -81,57 +88,141 @@ function createDirichlet(initial=1.0) {
     const obj = {};
     obj.initial = initial;
     obj.str = `Dirichlet [${obj.initial}, ${obj.initial}]`;
+    obj.bound = bound_default;
     return obj;
 }
 
+function createDefault() {
+    const obj = {};
+    obj.str = `Using Tree Prior in [0, ∞]`
+    obj.bound = bound_default;
+    return obj;
+}
+
+function createPoisson(val = 0.693147) {
+    const obj = {};
+    obj.val = val;
+    obj.str = `Poisson [${obj.val}]`;
+    obj.bound = ["n/a"];
+    return obj;
+}
+
+var parameters = [
+    {
+        parameter: "kappa",
+        obj: createLogNormal(),
+        description: "HKY transition-transversion parameter"
+    },
+    {
+        parameter: "gtr.rates",
+        obj: createDirichlet(),
+        description: "GTR transition rates parameter"
+    },
+    {
+        parameter: "kappa1",
+        obj: createLogNormal(),
+        description: "TN93 1st transition-transversion parameter"
+    },
+    {
+        parameter: "kappa2",
+        obj: createLogNormal(),
+        description: "TN93 2nd transition-transversion parameter"
+    },
+    {
+        parameter: "frequencies",
+        obj: createDirichlet(),
+        bound: bound_default,
+        description: "base frequencies"
+    },
+    {
+        parameter: "alpha",
+        obj: createExponential(),
+        description: "gamma shape parameter"
+    },
+    {
+        parameter: "pInv",
+        obj: createUniform(),
+        description: "proportion of invariant sites parameter"
+    },
+    {
+        parameter: "clock.rate",
+        obj: createFixedValue(),
+        description: "substitution rate"
+    },
+    {
+        parameter: "clock.rate",
+        obj: createFixedValue(),
+        description: "substitution rate"        
+    },
+    {
+        parameter: "ucld.mean",
+        obj: createFixedValue(),
+        description:  "uncorrelated lognormal relaxed clock mean"
+    },
+    {
+        parameter: "ucgd.mean",
+        obj: createFixedValue(),
+        description: "uncorrelated gamma relaxed clock mean"
+    },
+    {
+       parameter: "uced.mean",
+       obj: createFixedValue(),
+       description: "uncorrelated exponential relaxed clock mean"
+    },
+    {
+        parameter: "ucld.stdev",
+        obj: createExponential(initial=0.3333333, mean=0.333333, offset=0),
+        description: "uncorrelated lognormal relaxed clock stdev"
+    },
+    {
+        parameter: "ucgd.shape",
+        obj: createExponential(initial=0.3333333, mean=0.333333, offset=0),
+        description: "uncorrelated gamma relaxed clock shape"
+    },
+    {
+        parameter: "rateChanges",
+        obj: createPoisson(),
+        description: "number of random local clocks"
+    },
+    {
+        parameter: "localClock.relativeRates",
+        obj: createGamma(),
+        description: "random local clock relative rates"
+    },
+    {
+        parameter: "treeModel.rootHeight",
+        obj: createDefault(),
+        description: "root height of the tree"
+    },
+    {
+        parameter: "constant.popSize",
+        obj: createInverse(),
+        description: "coalescent population size parameter"
+    },
+    {
+        parameter: "skyline.popSize",
+        obj: createUniform(lower=0, upper=1E100, initial=1),
+        description: "Bayesian Skyline population sizes"
+    }
+];
+
+
 function getPriorValues() {
+    var rows = [];
     priors = [
         // sites models
         // HKY
-        createLogNormal();
+        createLogNormal()
 
-    ];
+    ];    
 
+    var prior_parameters = [];
 
     // Sites Tab
-    let obj;
-    // HKY
-            obj = createLogNormal();
-            let hky_detail = [
-                "kappa",
-                "LogNormal [" + obj.mu + ", " + obj.sigma + "] initial=" + obj.initial,
-                bound_default,
-                "HKY transition-transversion parameter"
-            ];
-            rows.push(hky_detail);
-            break;
-        case "GTR":
-            obj = createDirichlet();
-            let gtr_detail = [
-                "gtr.rates",
-                "Dirichlet [" + obj.initial + ", " + obj.initial + "]",
-                bound_default,
-                "GTR transition rates parameter"
-            ];
-            rows.push(gtr_detail);
-            break;
-        case "TN93":
-            obj = createLogNormal();
-            let tn93_detail = [
-                "kappa1",
-                "LogNormal [" + obj.mu + ", " + obj.sigma + "] initial=" + obj.initial,
-                bound_default,
-                "TN93 1st transition-transversion parameter"
-            ];
-            rows.push(tn93_detail);
-            obj = createLogNormal();
-            let tn93_detailk2 = [
-                "kappa2",
-                "LogNormal [" + obj.mu + ", " + obj.sigma + "] initial=" + obj.initial,
-                bound_default,
-                "TN93 2nd transition-transversion parameter"
-            ];
-            rows.push(tn93_detailk2);
+    var objIndex;
+    switch($("#select-submodel").val()) {
+        case "HKY":
+            prior_parameters.push("kappa");
             break;
     }
 
@@ -141,260 +232,46 @@ function getPriorValues() {
             case "Equal":
                 break;
             case "Estimated":
-                obj = createDirichlet();
-                let freq = [
-                    "frequencies",
-                    "Dirichlet [" + obj.initial + ", " + obj.initial + "]",
-                    bound_default,
-                    "base frequencies"
-                ];
-                rows.push(freq);
+                prior_parameters.push("frequencies");
                 break;
         }
     }
 
-    switch($("#select-sitehetero").val()) {
-        case "GI":
-            obj = createExponential();
-            let gi = [
-                "alpha",
-                "Exponential [" + obj.mean + "], initial= " + obj.initial,
-                bound_default,
-                "gamma shape parameter"
-            ];
-            rows.push(gi);
-        case "I":
-            obj = createUniform();
-            let inv = [
-                "pInv",
-                "Uniform [" + obj.lower + ", "+ obj.upper +"], initial= " + obj.initial,
-                "[" + obj.lower + ", " + obj.upper + "]",
-                "proportion of invariant sites parameter"
-            ];
-            rows.push(inv);
-            break;
-        case "G":
-            obj = createExponential();
-            let gamma = [
-                "alpha",
-                "Exponential [" + obj.mean + "], initial= " + obj.initial,
-                bound_default,
-                "gamma shape parameter"
-            ];
-            rows.push(gamma);
-            break;
-        default:
-            break;
-    }
-
-    var i, curr = 0;
-    var currLength = rows.length;
-    for (i = 0; i < currLength; i++) {
-        if ($("#select-codonpos").val() == "2") {
-            let row = [
-                "CP3."+rows[curr][0],
-                rows[curr][1],
-                rows[curr][2],
-                rows[curr][3] + " for codon positions 3"
-            ];
-            rows.splice(curr+1, 0, row);
-            rows[curr][0] = "CP1+2."+rows[curr][0];
-            rows[curr][3] = rows[curr][3] + " for codon positions 1 & 2";
-            curr+=2;
-        }
-        else if ($("#select-codonpos").val() == "3") {
-            let row = [
-                "CP2."+rows[curr][0],
-                rows[curr][1],
-                rows[curr][2],
-                rows[curr][3] + " for codon positions 2"
-            ];
-            let row2 = [
-                "CP3."+rows[curr][0],
-                rows[curr][1],
-                rows[curr][2],
-                rows[curr][3] + " for codon positions 3"
-            ];
-            rows.splice(curr+1, 0, row);
-            rows.splice(curr+2, 0, row2);
-            rows[curr][0] = "CP1."+rows[curr][0];
-            rows[curr][3] = rows[curr][3] + " for codon positions 1";
-            curr+=3;
-        }
-
-    }
-
-    // TODO
-    switch($("#select-codonpos").val()) {
-        case "2":
-        case "3":
-            obj = createDirichlet();
-            let allNus = [
-                "allNus",
-                "Dirichlet [" + obj.initial + ", " + obj.initial + "]",
-                bound_default,
-                "relative rates amongst partitions parameter"
-            ];
-            rows.push(allNus);
-            break;
-    }
-
     // Clock Tab
     if ($("#select-clock").val() !== "uncorrelated") {
-        obj = createFixedValue();
-        let strictc = [
-            "clock.rate",
-            "Fixed Value, value= " + obj.initial,
-            bound_default,
-            "substitution rate"
-        ];
-        rows.push(strictc); 
+        prior_parameters.push("clock.rate");
     }
 
     switch($("#select-clock").val()) {
         case "uncorrelated":
-            obj = createFixedValue();
-            var parameter;
             switch($("#select-relaxed-dist").val()) {
                 case "lognormal":
-                    parameter = "ucld.mean";
-                    break;
-                case "gamma" :
-                    parameter = "ucgd.mean";
-                    break;
-                case "exponential":
-                    parameter = "uced.mean";
+                    prior_parameters.push("ucld.mean");
+                    prior_parameters.push("ucld.stdev");
                     break;
             }
-            let uncorrClock = [
-                parameter,
-                "Fixed value, value=" + obj.initial,
-                bound_default,
-                "uncorrelated " + $("#select-relaxed-dist").val() + " relaxed clock mean"
-            ];
-            rows.push(uncorrClock);
-            switch($("#select-relaxed-dist").val()) {
-                case "lognormal":
-                    obj = createExponential(initial=0.3333333, mean=0.333333, offset=0);
-                    let uncorrStdev = [
-                        "ucld.stdev",
-                        "Exponential [" + obj.mean + "], initial= " + obj.initial,
-                        bound_default,
-                        "uncorrelated lognormal relaxed clock stdev"
-                    ];
-                    rows.push(uncorrStdev);
-                    break;
-                case "gamma" :
-                    obj = createExponential(initial=0.3333333, mean=0.333333, offset=0);
-                    let uncorrShape = [
-                        "ucgd.shape",
-                        "Exponential [" + obj.mean + "], initial= " + obj.initial,
-                        bound_default,
-                        "uncorrelated gamma relaxed clock shape"
-                    ];
-                    rows.push(uncorrShape);
-                    break;
-            }
-            break;
-        case "random-local":
-            let rateChanges = [
-                "rateChanges",
-                "Poisson [0.693147]",
-                "n/a",
-                "number of random local clocks"
-            ];
-            rows.push(rateChanges);
-            obj = createGamma();
-            let relativeRates = [
-                "localClock.relativeRates",
-                "Gamma [" + obj.shape + ", " + obj.scale + "], initial=" + obj.initial,
-                bound_default,
-                "random local clock relative rates"
-            ];
-            rows.push(relativeRates);
             break;
     }
 
     // Trees Tab
-    let treeModel = [
-        "treeModel.rootHeight",
-        "Using Tree Prior in [0, ∞]",
-        bound_default,
-        "root height of the tree"
-    ];
-    rows.push(treeModel);
+    prior_parameters.push("treeModel.rootHeight");
 
     if ($("#select-treeModel").val() != "skyline") {
-        obj = createInverse();
-        let popSize = [
-            $("#select-treeModel").val() + ".popSize",
-            "1/x, initial=" + obj.initial,
-            bound_default,
-            "coalescent population size parameter"
-        ];
-        rows.push(popSize);
-
-        if ($("#select-treeModel").val() !== "constant") {
-            if ($('#select-parGrow').val() === "parGrowGR") {
-                if ($("#select-treeModel").val() === "exponential") 
-                    obj = createLaplace(initial=0);
-                else
-                    obj = createLaplace();
-            
-                let gr = [
-                    $("#select-treeModel").val() + ".growthRate",
-                    "Laplace [" + obj.mean + ", " + obj.scale + "], Initial = " + obj.initial,
-                    "[-∞, ∞]",
-                    "coalescent "+ $("#select-treeModel").val() + " growth rate parameter"
-                ];
-                rows.push(gr); 
-            }
-            else {
-                obj = createGamma(shape=0.001, scale=1000);
-                let gr = [
-                    $("#select-treeModel").val() + ".doublingTime",
-                    "Gamma [" + obj.shape + ", " + obj.scale + "], initial=" + obj.initial,
-                    bound_default,
-                    "coalescent "+ $("#select-treeModel").val() + " doubling time parameter"
-                ];
-                rows.push(gr); 
-            }
-        }
+        prior_parameters.push($("#select-treeModel").val() + ".popSize");
     }
+    else
+        prior_parameters.push("skyline.popSize");
 
-
-    switch($("#select-treeModel").val()) {
-        case "expansion":
-            obj = createUniform(lower=0, upper=1, initial=0.1);
-            let anc = [
-                "expansion.ancestralProportion",
-                "Uniform [" + obj.lower + ", " + obj.upper + "], initial=" + obj.initial,
-                "["+obj.lower + ", " + obj.upper + "]",
-                "ancestral population proportion"
-            ];
-            rows.push(anc); 
-            break;
-        case "logistic":
-            obj = createGamma(shape=0.001, scale=1000);
-            let logShape = [
-                "logistic.t50",
-                "Gamma [" + obj.shape + ", " + obj.scale + "], initial=" + obj.initial,
-                bound_default,
-                "logistic shape parameter"
-            ];
-            rows.push(logShape); 
-            break;
-        case "skyline":
-            obj = createUniform(lower=0, upper=1E100, initial=1)
-            let sky = [
-                "skyline.popSize",
-                "Uniform [" + obj.lower + ", " + obj.upper + "], initial=" + obj.initial,
-                "["+obj.lower + ", " + obj.upper + "]",
-                "Bayesian Skyline population sizes"
-            ];
-            rows.push(sky); 
-            break;
-    }
+    prior_parameters.forEach( function(param) {
+        objIndex = parameters.findIndex(obj => obj.parameter === param);
+        let curr_row = [
+            parameters[objIndex].parameter,
+            parameters[objIndex].obj.str,
+            parameters[objIndex].obj.bound[0] !== "n/a" ? (`[${parameters[objIndex].obj.bound[0]}, ${(parameters[objIndex].obj.bound[1]) == Infinity ? "∞" : parameters[objIndex].obj.bound[1]}]`) : parameters[objIndex].obj.bound[0],
+            parameters[objIndex].description
+        ]
+        rows.push(curr_row);
+    });
 
     return rows;
 }
