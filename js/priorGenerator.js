@@ -1,11 +1,24 @@
-var bound_default = "[0, ∞]";
+var priors;  //bound_default = "[0, ∞]";
 
-function createLogNormal() {
+
+/**
+ * Utility functions to create Objects that represent prior distributions.
+ * @param {String} name:  name of parameter
+ * @param {float} initial:  initial value
+ * @param {float} mu:  log mean hyperparameter
+ * @param {float} sigma:  log standard deviation hyperparameter
+ * @param {float} offset:  offset hyperparameter
+ * @param {float} lower:  truncate to lower bound
+ * @param {float} upper: truncate to upper bound
+ * @returns {Object}
+ */
+function createLogNormal(name, initial=2.0, mu=1.0, sigma=1.25, offset=0.0, lower=0, upper=Infinity) {
     const obj = {};
-    obj.initial=2.0;
-    obj.mu=1.0;
-    obj.sigma=1.25;
-    obj.offset=0.0;
+    obj.name = name;
+    obj.initial = initial;
+    obj.mu = mu;
+    obj.sigma = sigma;
+    obj.offset = offset;
     obj.str = `LogNormal [${obj.mu}, ${obj.sigma}], initial=${obj.initial}`;
     return obj;
 }
@@ -15,23 +28,26 @@ function createInverse(initial=1.0) {
     // used for constant population size under coalescent
     const obj = {};
     obj.initial=initial;
+    obj.str = `1/x, initial=${obj.initial}`;
     return obj;
 }
 
 function createGamma(initial=2.0, shape=0.5, scale=2, offset=0.0) {
     const obj = {};
-    obj.initial=initial;
-    obj.shape=shape;
-    obj.scale=scale;
-    obj.offset=offset;
+    obj.initial = initial;
+    obj.shape = shape;
+    obj.scale = scale;
+    obj.offset = offset;
+    obj.str = `Gamma [${obj.shape}, ${obj.scale}], initial=${obj.initial}`;
     return obj;
 }
 
 function createLaplace(initial=0.1, mean=0.0, scale=1.0) {
     const obj = {};
-    obj.initial=initial;
-    obj.mean=mean;
-    obj.scale=scale;
+    obj.initial = initial;
+    obj.mean = mean;
+    obj.scale = scale;
+    obj.str = `Laplace [${obj.mean}, ${obj.scale}], initial=${obj.initial}`;
 
     return obj;
 }
@@ -69,12 +85,17 @@ function createDirichlet(initial=1.0) {
 }
 
 function getPriorValues() {
-    var rows = [];
+    priors = [
+        // sites models
+        // HKY
+        createLogNormal();
+
+    ];
+
 
     // Sites Tab
-    var obj;
-    switch($("#select-submodel").val()) {
-        case "HKY":
+    let obj;
+    // HKY
             obj = createLogNormal();
             let hky_detail = [
                 "kappa",
