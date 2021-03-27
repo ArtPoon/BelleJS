@@ -22,6 +22,11 @@ function export_xml() {
     taxon.setAttribute("id", alignment[i]['header']);
     taxa.appendChild(taxon);
 
+    let date = document.createElement('date');
+    date.setAttribute("value", alignment[i]['date']);
+    if ($("#dates_as_direction"))
+    date.setAttribute("direction", );
+
     let seq = document.createElement('sequence'),
         seq_taxon = document.createElement('taxon');
     seq_taxon.setAttribute("idref", alignment[i]['header']);
@@ -37,10 +42,11 @@ function export_xml() {
     aln.appendChild(seq);
   }
 
+  //
   let serializer = new XMLSerializer();
   let xmlString = serializer.serializeToString(beast_xml);
 
   let blob = new Blob([xmlString],
       {type: "text/plain;charset=utf-8"});
-  saveAs(blob, filename+".xml");
+  saveAs(blob, $("#filename_stem").val()+".xml");
 }
