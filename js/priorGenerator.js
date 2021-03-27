@@ -1,3 +1,4 @@
+var bound_default = "[0, ∞]";
 function createLogNormal() {
     const obj = {};
     obj.initial=2.0;
@@ -70,7 +71,7 @@ function getPriorValues() {
             let hky_detail = [
                 "kappa",
                 "LogNormal [" + obj.mu + ", " + obj.sigma + "] initial=" + obj.initial,
-                "[0,∞]",
+                bound_default,
                 "HKY transition-transversion parameter"
             ];
             rows.push(hky_detail);
@@ -80,7 +81,7 @@ function getPriorValues() {
             let gtr_detail = [
                 "gtr.rates",
                 "Dirichlet [" + obj.initial + ", " + obj.initial + "]",
-                "[0,∞]",
+                bound_default,
                 "GTR transition rates parameter"
             ];
             rows.push(gtr_detail);
@@ -90,7 +91,7 @@ function getPriorValues() {
             let tn93_detail = [
                 "kappa1",
                 "LogNormal [" + obj.mu + ", " + obj.sigma + "] initial=" + obj.initial,
-                "[0,∞]",
+                bound_default,
                 "TN93 1st transition-transversion parameter"
             ];
             rows.push(tn93_detail);
@@ -98,7 +99,7 @@ function getPriorValues() {
             let tn93_detailk2 = [
                 "kappa2",
                 "LogNormal [" + obj.mu + ", " + obj.sigma + "] initial=" + obj.initial,
-                "[0,∞]",
+                bound_default,
                 "TN93 2nd transition-transversion parameter"
             ];
             rows.push(tn93_detailk2);
@@ -115,7 +116,7 @@ function getPriorValues() {
                 let freq = [
                     "frequencies",
                     "Dirichlet [" + obj.initial + ", " + obj.initial + "]",
-                    "[0,∞]",
+                    bound_default,
                     "base frequencies"
                 ];
                 rows.push(freq);
@@ -129,7 +130,7 @@ function getPriorValues() {
             let gi = [
                 "alpha",
                 "Exponential [" + obj.mean + "], initial= " + obj.initial,
-                "[0,∞]",
+                bound_default,
                 "gamma shape parameter"
             ];
             rows.push(gi);
@@ -148,7 +149,7 @@ function getPriorValues() {
             let gamma = [
                 "alpha",
                 "Exponential [" + obj.mean + "], initial= " + obj.initial,
-                "[0,∞]",
+                bound_default,
                 "gamma shape parameter"
             ];
             rows.push(gamma);
@@ -157,13 +158,55 @@ function getPriorValues() {
             break;
     }
 
+    var i, curr = 0;
+    var currLength = rows.length;
+    for (i = 0; i < currLength; i++) {
+        if ($("#select-codonpos").val() == "2") {
+            let row = [
+                "CP3."+rows[curr][0],
+                rows[curr][1],
+                rows[curr][2],
+                rows[curr][3] + " for codon positions 3"
+            ];
+            rows.splice(curr+1, 0, row);
+            rows[curr][0] = "CP1+2."+rows[curr][0];
+            rows[curr][3] = rows[curr][3] + " for codon positions 1 & 2";
+            curr+=2;
+        }
+        else if ($("#select-codonpos").val() == "3") {
+            let row = [
+                "CP2."+rows[curr][0],
+                rows[curr][1],
+                rows[curr][2],
+                rows[curr][3] + " for codon positions 2"
+            ];
+            let row2 = [
+                "CP3."+rows[curr][0],
+                rows[curr][1],
+                rows[curr][2],
+                rows[curr][3] + " for codon positions 3"
+            ];
+            rows.splice(curr+1, 0, row);
+            rows.splice(curr+2, 0, row2);
+            rows[curr][0] = "CP1."+rows[curr][0];
+            rows[curr][3] = rows[curr][3] + " for codon positions 1";
+            curr+=3;
+        }
+
+    }
+
     // TODO
     switch($("#select-codonpos").val()) {
         case "2":
-            break;
         case "3":
-            break;
-        default:
+            obj = createDirichlet();
+            let allNus = [
+                "allNus",
+                "Dirichlet [" + obj.initial + ", " + obj.initial + "]",
+                bound_default,
+                "relative rates amongst partitions parameter"
+            ];
+            rows.push(allNus);
             break;
     }
 
@@ -173,7 +216,7 @@ function getPriorValues() {
         let strictc = [
             "clock.rate",
             "Fixed Value, value= " + obj.initial,
-            "[0,∞]",
+            bound_default,
             "substitution rate"
         ];
         rows.push(strictc); 
@@ -197,7 +240,7 @@ function getPriorValues() {
             let uncorrClock = [
                 parameter,
                 "Fixed value, value=" + obj.initial,
-                "[0,∞]",
+                bound_default,
                 "uncorrelated " + $("#select-relaxed-dist").val() + " relaxed clock mean"
             ];
             rows.push(uncorrClock);
@@ -207,7 +250,7 @@ function getPriorValues() {
                     let uncorrStdev = [
                         "ucld.stdev",
                         "Exponential [" + obj.mean + "], initial= " + obj.initial,
-                        "[0,∞]",
+                        bound_default,
                         "uncorrelated lognormal relaxed clock stdev"
                     ];
                     rows.push(uncorrStdev);
@@ -217,7 +260,7 @@ function getPriorValues() {
                     let uncorrShape = [
                         "ucgd.shape",
                         "Exponential [" + obj.mean + "], initial= " + obj.initial,
-                        "[0,∞]",
+                        bound_default,
                         "uncorrelated gamma relaxed clock shape"
                     ];
                     rows.push(uncorrShape);
@@ -236,7 +279,7 @@ function getPriorValues() {
             let relativeRates = [
                 "localClock.relativeRates",
                 "Gamma [" + obj.shape + ", " + obj.scale + "], initial=" + obj.initial,
-                "[0,∞]",
+                bound_default,
                 "random local clock relative rates"
             ];
             rows.push(relativeRates);
@@ -247,7 +290,7 @@ function getPriorValues() {
     let treeModel = [
         "treeModel.rootHeight",
         "Using Tree Prior in [0, ∞]",
-        "[0, ∞]",
+        bound_default,
         "root height of the tree"
     ];
     rows.push(treeModel);
@@ -257,7 +300,7 @@ function getPriorValues() {
         let popSize = [
             $("#select-treeModel").val() + ".popSize",
             "1/x, initial=" + obj.initial,
-            "[0, ∞]",
+            bound_default,
             "coalescent population size parameter"
         ];
         rows.push(popSize);
@@ -282,7 +325,7 @@ function getPriorValues() {
                 let gr = [
                     $("#select-treeModel").val() + ".doublingTime",
                     "Gamma [" + obj.shape + ", " + obj.scale + "], initial=" + obj.initial,
-                    "[0, ∞]",
+                    bound_default,
                     "coalescent "+ $("#select-treeModel").val() + " doubling time parameter"
                 ];
                 rows.push(gr); 
@@ -307,7 +350,7 @@ function getPriorValues() {
             let logShape = [
                 "logistic.t50",
                 "Gamma [" + obj.shape + ", " + obj.scale + "], initial=" + obj.initial,
-                "[0, ∞]",
+                bound_default,
                 "logistic shape parameter"
             ];
             rows.push(logShape); 
