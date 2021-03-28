@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap');
+
 input[type="file"] {
   display: none;
 }
@@ -9,8 +11,12 @@ input[type="file"] {
   cursor: pointer;
 }
 
+html {
+  font-family: Lato, Cabin, Arial, sans-serif;
+}
+
 h1 {
-  font-family: Cabin, Arial, sans-serif;
+  margin-block: 0;
 }
 
 table {

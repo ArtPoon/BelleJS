@@ -15,7 +15,7 @@ function generate_site_model() {
   fm_param.setAttribute("value", "0.25 0.25 0.25 0.25");
 
   fm_freq.appendChild(fm_param);
-  freq_model.setAttribute("dataType", "nucleotide");
+  freq_model.setAttributeNS("", "dataType", "nucleotide");
   freq_model.appendChild(fm_freq);
   frequencies.appendChild(freq_model);
 
@@ -27,7 +27,7 @@ function generate_site_model() {
   kappa.appendChild(kpar);
 
   if (model_name === 'JC' || model_name === 'HKY') {
-    site_model = document.createElement("HKYModel");
+    site_model = document.createElementNS("", "HKYModel");
     site_model.setAttribute("id", "hky");
     site_model.appendChild(frequencies);
     site_model.appendChild(kappa);
@@ -92,8 +92,10 @@ function export_xml() {
     aln.appendChild(seq);
   }
 
-  // add substitution model
-  let site_model = generate_site_model();
+  // replace substitution model
+  let site_model = generate_site_model(),
+      default_model = beast.getElementsByTagName("HKYModel")[0];
+  beast.replaceChild(site_model, default_model);
 
   // serialize XML to write to file
   let serializer = new XMLSerializer();
