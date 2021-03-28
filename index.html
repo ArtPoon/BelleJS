@@ -181,7 +181,7 @@
       <tr>
         <td class="rightj"><label>Substitution Model</label></td>
         <td>
-          <select id="select-submodel">
+          <select id="select-submodel" onchange="changeSubModel()">
             <option value="JC">JC</option>
             <option value="HKY">HKY</option>
             <option value="GTR" disabled>GTR</option>
@@ -193,7 +193,7 @@
       <tr>
         <td class="rightj"><label>Base frequencies:</label></td>
         <td>
-          <select id="select-basefreq">
+          <select id="select-basefreq" onchange="changeBaseFreq();">
             <option value="Estimated">Estimated</option>
             <option value="Empirical">Empirical</option>
             <option value="Equal">All equal</option>

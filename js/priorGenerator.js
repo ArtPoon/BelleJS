@@ -1,3 +1,4 @@
+var priors;
 
 /**
  * Utility functions to create Objects that represent prior distributions.
@@ -11,17 +12,25 @@
  * @returns {Object}
  */
 function LogNormalPrior(idref, initial=1.0, mu=1.0, sigma=1.0, offset=0.0, lower=0, upper=Infinity) {
+  this.active = true;
   this.idref = idref;
   this.initial = initial;
   this.mu = mu;
   this.sigma = sigma;
   this.offset = offset;
   this.bound = [lower, upper];
-  this.str = function() {return `LogNormal [${this.mu}, ${this.sigma}], initial=${this.initial}`};
+  this.str = function() {
+    return `LogNormal [${this.mu}, ${this.sigma}], initial=${this.initial}`
+  };
+  // TODO: generate operator element
+  this.operator = function() {
+
+  }
 }
 
 
 function NormalPrior(idref, initial=0.0, mean=0.0, stdev=1.0, lower=-Infinity, upper=Infinity) {
+  this.active = true;
   this.idref = idref;
   this.initial = initial;
   this.mean = mean;
@@ -34,13 +43,16 @@ function NormalPrior(idref, initial=0.0, mean=0.0, stdev=1.0, lower=-Infinity, u
 function InversePrior(idref, initial=1.0, lower=0, upper=Infinity) {
   // reciprocal distribution
   // used for constant population size under coalescent
+  this.active = true;
   this.idref = idref;
   this.initial = initial;
   this.bound = [lower, upper];
   this.str = function() { return `1/x, initial=${this.initial}` };
 }
 
-function GammaPrior(idref, initial=2.0, shape=0.5, scale=2, offset=0.0, lower=0, upper=Infinity) {
+function GammaPrior(idref, initial=2.0, shape=0.5, scale=2, offset=0.0,
+                    lower=0, upper=Infinity) {
+  this.active = true;
   this.idref = idref;
   this.initial = initial;
   this.shape = shape;
@@ -51,17 +63,22 @@ function GammaPrior(idref, initial=2.0, shape=0.5, scale=2, offset=0.0, lower=0,
   this.str = function() { return `Gamma [${this.shape}, ${this.scale}], initial=${this.initial}` };
 }
 
-function LaplacePrior(idref, initial=0.1, mean=0.0, scale=1.0, lower=0, upper=Infinity) {
+function LaplacePrior(idref, initial=0.1, mean=0.0, scale=1.0, lower=0,
+                      upper=Infinity) {
+  this.active = true;
   this.idref = idref;
   this.initial = initial;
   this.mean = mean;
   this.scale = scale;
   this.bound = [lower, upper];
 
-  this.str = function() { return `Laplace [${this.mean}, ${this.scale}], initial=${this.initial}`; };
+  this.str = function() {
+    return `Laplace [${this.mean}, ${this.scale}], initial=${this.initial}`;
+  };
 }
 
 function FixedValuePrior(idref, initial=1.0) {
+  this.active = true;
   this.idref = idref;
   this.initial = initial;
   this.bound = ['n/a', ];
@@ -69,6 +86,7 @@ function FixedValuePrior(idref, initial=1.0) {
 }
 
 function UniformPrior(idref, initial=0.5, lower=0, upper=1) {
+  this.active = true;
   this.idref = idref;
   this.initial = initial;
   this.bound = [lower, upper];
@@ -77,7 +95,9 @@ function UniformPrior(idref, initial=0.5, lower=0, upper=1) {
   };
 }
 
-function ExponentialPrior(idref, initial=0.5, mean=0.5, offset=0, lower=0, upper=Infinity) {
+function ExponentialPrior(idref, initial=0.5, mean=0.5, offset=0,
+                          lower=0, upper=Infinity) {
+  this.active = true;
   this.idref = idref;
   this.initial=initial;
   this.mean = mean;
@@ -90,6 +110,7 @@ function ExponentialPrior(idref, initial=0.5, mean=0.5, offset=0, lower=0, upper
 
 function DirichletPrior(idref) {
   // unusual prior in that BEAUti does not permit user to change hyperparameters
+  this.active = true;
   this.idref = idref;
   this.alpha = 1.0;
   this.sumsto = 1.0;
@@ -101,12 +122,14 @@ function DirichletPrior(idref) {
 
 function DefaultPrior(idref) {
   // use tree prior only
+  this.active = true;
   this.idref = idref;
   this.bound = [0, Infinity];
   this.str = function() { return `Using Tree Prior in [0, ∞]`};
 }
 
 function PoissonPrior(idref) {
+  this.active = true;
   this.idref = idref;
   this.rate = 0.693147;  // BEAUti v.1.10.4 does not allow this to change
   this.bound = ['n/a', ];
@@ -115,10 +138,8 @@ function PoissonPrior(idref) {
 
 
 
-/**
- *  Listing of all possible prior distributions associated with various model settings.
- */
-var parameters = [
+// Listing of all possible prior distributions associated with various model settings.
+priors = [
   // Sites models
   {
     parameter: "kappa",
@@ -225,11 +246,6 @@ function getPriorValues() {
   let objIndex,
       site_model = $("#select-submodel").val();
 
-  switch(site_model) {
-    case "HKY":
-      prior_parameters.push("kappa");
-      break;
-  }
 
   if (site_model !== "JC") {
     switch($("#select-basefreq").val()) {
@@ -268,15 +284,16 @@ function getPriorValues() {
   else
     prior_parameters.push("skyline.popSize");
 
+  // TODO: replace with d3
   prior_parameters.forEach( function(param) {
-    objIndex = parameters.findIndex(obj => obj.parameter === param);
-    let [lower, upper] = parameters[objIndex].obj.bound;
+    objIndex = priors.findIndex(obj => obj.parameter === param);
+    let [lower, upper] = priors[objIndex].obj.bound;
     let curr_row = [
-      parameters[objIndex].parameter,
-      parameters[objIndex].obj.str(),
+      priors[objIndex].parameter,
+      priors[objIndex].obj.str(),
       (lower !== "n/a") ? (`[${lower}, ${upper===Infinity ? "∞" : upper}]`) : "n/a",
-      parameters[objIndex].description
-    ]
+      priors[objIndex].description
+    ];
     rows.push(curr_row);
   });
 

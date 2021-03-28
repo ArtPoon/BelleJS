@@ -2,39 +2,56 @@ $( function() {
   $( "#tabs" ).tabs();
 } );
 
+
 // sites
-function changeSubModel(val) {
-  json.beast.siteModel.substitutionModel
+function changeSubModel() {
+  let submod = $("#select-submodel").val(),
+      kappa = priors.filter(x => x.parameter === 'kappa')[0],
+      freq = $("#select-basefreq");
+
+  if (submod === "JC") {
+    freq.val("Equal");
+    freq[0].disabled = true;
+  }
+  else {
+    freq[0].disabled = false;
+  }
+  kappa.obj.active = submod !== "JC";
 }
+
+function changeBaseFreq() {
+  console.log('foo');
+  let freq = priors.filter(x => x.parameter === 'frequencies')[0];
+  if ($("#select-submodel").val() !== "JC") {
+    freq.obj.active = ($("#select-basefreq").val() === "Estimated");
+  } else {
+    freq.obj.active = false;
+  }
+}
+
 
 function updateNCat(val) {
   $( '#ncat-display' )[0].innerHTML=val;
 }
 
 function activateNCat(val) {
-  if (val == 'G' | val=='GI') {
-    $( '#ncat-range' )[0].disabled = false;
-  } else {
-    $( '#ncat-range' )[0].disabled = true;
-  }
+  $('#ncat-range')[0].disabled = !(val === 'G' || val === 'GI');
 }
 
+
 function activateRelaxed(val) {
-  if (val=='uncorrelated') {
-    $( '#select-relaxed-dist' )[0].disabled = false;
-  } else {
-    $( '#select-relaxed-dist' )[0].disabled = true;
-  }
+  $('#select-relaxed-dist')[0].disabled = val !== 'uncorrelated';
 }
+
 
 function configureTreeModel(val) {
   var rows = $("table.treePriorTable tr");
 
-  if (val=='constant') {
+  if (val==='constant') {
     rows.filter(".parGrow").hide();
     rows.filter(".parSkyline").hide();
   }
-  else if (val=='skyline') {
+  else if (val==='skyline') {
     rows.filter(".parGrow").hide();
     rows.filter(".parSkyline").show();
   }
@@ -45,25 +62,23 @@ function configureTreeModel(val) {
   }
 }
 
+
 $( document ).ready(function() {
   $( '#ncat-range' ).trigger("change");
   $( '#select-treeModel' ).trigger("change");
   // tips
 
-  // sites
-  d3.select("#select-submodel").on("change", function() {
-    //console.log(this.value);
-  });
-
   //parser
   $("#parser_order_prefix").change(swap_parseOpts);
   $("#parser_order_only").change(swap_parseOpts);
-  swap_parseOpts()
+  swap_parseOpts();
 
   //Active tip labels
-  $('#use_tip_dates').change(Unlock_tipOpts)
- 
+  $('#use_tip_dates').change(Unlock_tipOpts);
 
+  // trigger event handlers to activate/inactivate priors
+  changeSubModel();
+  changeBaseFreq();
 });
 
 
