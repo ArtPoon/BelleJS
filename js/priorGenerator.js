@@ -107,7 +107,12 @@ function createPoisson(val = 0.693147) {
     return obj;
 }
 
+
+/**
+ *  Listing of all possible prior distributions associated with various model settings.
+ */
 var parameters = [
+    // Sites models
     {
         parameter: "kappa",
         obj: createLogNormal(),
@@ -144,6 +149,8 @@ var parameters = [
         obj: createUniform(),
         description: "proportion of invariant sites parameter"
     },
+
+    // Clock models
     {
         parameter: "clock.rate",
         obj: createFixedValue(),
@@ -189,6 +196,8 @@ var parameters = [
         obj: createGamma(),
         description: "random local clock relative rates"
     },
+
+    // Tree models
     {
         parameter: "treeModel.rootHeight",
         obj: createDefault(),
@@ -208,25 +217,20 @@ var parameters = [
 
 
 function getPriorValues() {
-    var rows = [];
-    priors = [
-        // sites models
-        // HKY
-        createLogNormal()
-
-    ];    
-
-    var prior_parameters = [];
+    var rows = [],
+        prior_parameters = [];
 
     // Sites Tab
-    var objIndex;
-    switch($("#select-submodel").val()) {
+    let objIndex,
+        site_model = $("#select-submodel").val();
+
+    switch(site_model) {
         case "HKY":
             prior_parameters.push("kappa");
             break;
     }
 
-    if ($("#select-submodel").val() != "JC") {
+    if (site_model !== "JC") {
         switch($("#select-basefreq").val()) {
             case "Empirical":
             case "Equal":
@@ -238,7 +242,7 @@ function getPriorValues() {
     }
 
     // Clock Tab
-    if ($("#select-clock").val() !== "uncorrelated") {
+    if (site_model !== "uncorrelated") {
         prior_parameters.push("clock.rate");
     }
 
@@ -256,7 +260,7 @@ function getPriorValues() {
     // Trees Tab
     prior_parameters.push("treeModel.rootHeight");
 
-    if ($("#select-treeModel").val() != "skyline") {
+    if ($("#select-treeModel").val() !== "skyline") {
         prior_parameters.push($("#select-treeModel").val() + ".popSize");
     }
     else
@@ -264,10 +268,14 @@ function getPriorValues() {
 
     prior_parameters.forEach( function(param) {
         objIndex = parameters.findIndex(obj => obj.parameter === param);
+        let [lower,  upper] = parameters[objIndex].obj.bound[0];
         let curr_row = [
             parameters[objIndex].parameter,
             parameters[objIndex].obj.str,
-            parameters[objIndex].obj.bound[0] !== "n/a" ? (`[${parameters[objIndex].obj.bound[0]}, ${(parameters[objIndex].obj.bound[1]) == Infinity ? "∞" : parameters[objIndex].obj.bound[1]}]`) : parameters[objIndex].obj.bound[0],
+            lower !== "n/a" ?
+                (`[${parameters[objIndex].obj.bound[0]}, ${(parameters[objIndex].obj.bound[1]) === Infinity ? 
+                    "∞" : parameters[objIndex].obj.bound[1]}]`) :
+                parameters[objIndex].obj.bound[0],
             parameters[objIndex].description
         ]
         rows.push(curr_row);
