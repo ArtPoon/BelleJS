@@ -1,5 +1,3 @@
-// TODO: user cannot change bounds yet
-var bound_default = [0, Infinity]
 
 /**
  * Utility functions to create Objects that represent prior distributions.
@@ -23,7 +21,7 @@ function LogNormalPrior(idref, initial=1.0, mu=1.0, sigma=1.0, offset=0.0, lower
 }
 
 
-function NormalPrior(idref, initial=0.0, mean=0.0, stdev=1.0, lower=0, upper=Infinity) {
+function NormalPrior(idref, initial=0.0, mean=0.0, stdev=1.0, lower=-Infinity, upper=Infinity) {
   this.idref = idref;
   this.initial = initial;
   this.mean = mean;
@@ -66,51 +64,55 @@ function LaplacePrior(idref, initial=0.1, mean=0.0, scale=1.0, lower=0, upper=In
 function FixedValuePrior(idref, initial=1.0) {
   this.idref = idref;
   this.initial = initial;
+  this.bound = ['n/a', ];
   this.str = function() { return `Fixed value, value=${this.initial}`; };
 }
 
-function UniformPrior(initial=0.5, lower=0, upper=1) {
+function UniformPrior(idref, initial=0.5, lower=0, upper=1) {
   this.idref = idref;
-  obj.initial=initial;
-  obj.lower=lower;
-  obj.upper=upper;
-  obj.str = `Uniform [${obj.lower}, ${obj.upper}], initial=${obj.initial}`;
-  obj.bound = [lower, upper];
-  return obj;
+  this.initial = initial;
+  this.bound = [lower, upper];
+  this.str = function() {
+    return `Uniform [${this.bound[0]}, ${this.bound[1]}], initial=${this.initial}`;
+  };
 }
 
-function createExponential(initial=0.5, mean=0.5, offset=0) {
-  const obj = {};
-  obj.initial=initial;
-  obj.mean=mean;
-  obj.offset=offset;
-  obj.str = `Exponential [${obj.mean}], initial=${obj.initial}`;
-  obj.bound = bound_default;
-  return obj;
+function ExponentialPrior(idref, initial=0.5, mean=0.5, offset=0, lower=0, upper=Infinity) {
+  this.idref = idref;
+  this.initial=initial;
+  this.mean = mean;
+  this.offset = offset;
+  this.bound = [lower, upper];
+  this.str = function() {
+    return `Exponential [${this.mean}], initial=${this.initial}`;
+  };
 }
 
-function createDirichlet(initial=1.0) {
-  const obj = {};
-  obj.initial = initial;
-  obj.str = `Dirichlet [${obj.initial}, ${obj.initial}]`;
-  obj.bound = bound_default;
-  return obj;
+function DirichletPrior(idref) {
+  // unusual prior in that BEAUti does not permit user to change hyperparameters
+  this.idref = idref;
+  this.alpha = 1.0;
+  this.sumsto = 1.0;
+  this.bound = [0, Infinity];
+  this.str = function() {
+    return `Dirichlet [${this.alpha}, ${this.sumsto}]`;
+  };
 }
 
-function createDefault() {
-  const obj = {};
-  obj.str = `Using Tree Prior in [0, ∞]`
-  obj.bound = bound_default;
-  return obj;
+function DefaultPrior(idref) {
+  // use tree prior only
+  this.idref = idref;
+  this.bound = [0, Infinity];
+  this.str = function() { return `Using Tree Prior in [0, ∞]`};
 }
 
-function createPoisson(val = 0.693147) {
-  const obj = {};
-  obj.val = val;
-  obj.str = `Poisson [${obj.val}]`;
-  obj.bound = ["n/a"];
-  return obj;
+function PoissonPrior(idref) {
+  this.idref = idref;
+  this.rate = 0.693147;  // BEAUti v.1.10.4 does not allow this to change
+  this.bound = ['n/a', ];
+  this.str = function() { return `Poisson [${this.rate}]`};
 }
+
 
 
 /**
@@ -120,102 +122,96 @@ var parameters = [
   // Sites models
   {
     parameter: "kappa",
-    obj: createLogNormal(),
+    obj: new LogNormalPrior('kappa'),
     description: "HKY transition-transversion parameter"
   },
   {
     parameter: "gtr.rates",
-    obj: createDirichlet(),
+    obj: new DirichletPrior("gtr.rates"),
     description: "GTR transition rates parameter"
   },
   {
     parameter: "kappa1",
-    obj: createLogNormal(),
+    obj: new LogNormalPrior("kappa1"),
     description: "TN93 1st transition-transversion parameter"
   },
   {
     parameter: "kappa2",
-    obj: createLogNormal(),
+    obj: new LogNormalPrior("kappa2"),
     description: "TN93 2nd transition-transversion parameter"
   },
   {
     parameter: "frequencies",
-    obj: createDirichlet(),
-    bound: bound_default,
+    obj: new DirichletPrior("frequencies"),
     description: "base frequencies"
   },
   {
     parameter: "alpha",
-    obj: createExponential(),
+    obj: new ExponentialPrior("alpha"),
     description: "gamma shape parameter"
   },
   {
     parameter: "pInv",
-    obj: createUniform(),
+    obj: new UniformPrior("pInv"),
     description: "proportion of invariant sites parameter"
   },
 
   // Clock models
   {
     parameter: "clock.rate",
-    obj: createFixedValue(),
-    description: "substitution rate"
-  },
-  {
-    parameter: "clock.rate",
-    obj: createFixedValue(),
+    obj: new FixedValuePrior("clock.rate"),
     description: "substitution rate"
   },
   {
     parameter: "ucld.mean",
-    obj: createFixedValue(),
+    obj: new FixedValuePrior("ucld.mean"),
     description:  "uncorrelated lognormal relaxed clock mean"
   },
   {
     parameter: "ucgd.mean",
-    obj: createFixedValue(),
+    obj: new FixedValuePrior("ucgd.mean"),
     description: "uncorrelated gamma relaxed clock mean"
   },
   {
     parameter: "uced.mean",
-    obj: createFixedValue(),
+    obj: new FixedValuePrior("uced.mean"),
     description: "uncorrelated exponential relaxed clock mean"
   },
   {
     parameter: "ucld.stdev",
-    obj: createExponential(initial=0.3333333, mean=0.333333, offset=0),
+    obj: new ExponentialPrior(idref="ucld.stdev", initial=0.3333333, mean=0.333333, offset=0),
     description: "uncorrelated lognormal relaxed clock stdev"
   },
   {
     parameter: "ucgd.shape",
-    obj: createExponential(initial=0.3333333, mean=0.333333, offset=0),
+    obj: new ExponentialPrior(initial=0.3333333, mean=0.333333, offset=0),
     description: "uncorrelated gamma relaxed clock shape"
   },
   {
     parameter: "rateChanges",
-    obj: createPoisson(),
+    obj: new PoissonPrior("rateChanges"),
     description: "number of random local clocks"
   },
   {
     parameter: "localClock.relativeRates",
-    obj: createGamma(),
+    obj: new GammaPrior('localClock.relativeRates'),
     description: "random local clock relative rates"
   },
 
   // Tree models
   {
     parameter: "treeModel.rootHeight",
-    obj: createDefault(),
+    obj: new DefaultPrior('treeModel.rootHeight'),
     description: "root height of the tree"
   },
   {
     parameter: "constant.popSize",
-    obj: createInverse(),
+    obj: new InversePrior('constant.popSize'),
     description: "coalescent population size parameter"
   },
   {
     parameter: "skyline.popSize",
-    obj: createUniform(initial=1, lower=0, upper=1E100),
+    obj: new UniformPrior(idref='skyline.popSize', initial=1, lower=0, upper=1E100),
     description: "Bayesian Skyline population sizes"
   }
 ];
@@ -277,7 +273,7 @@ function getPriorValues() {
     let [lower, upper] = parameters[objIndex].obj.bound;
     let curr_row = [
       parameters[objIndex].parameter,
-      parameters[objIndex].obj.str,
+      parameters[objIndex].obj.str(),
       (lower !== "n/a") ? (`[${lower}, ${upper===Infinity ? "∞" : upper}]`) : "n/a",
       parameters[objIndex].description
     ]
