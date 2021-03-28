@@ -37,6 +37,19 @@ function generate_site_model() {
 }
 
 
+function update_mcmc(default_mcmc) {
+  // modify top element attributes
+  default_mcmc.setAttribute("chainLength", $("#length_of_chain").val());
+  if ($("#create_ops_file")[0].checked) {
+    default_mcmc.setAttribute("operatorAnalysis", $("#ops_file_name").val());
+  } else {
+    default_mcmc.removeAttribute("operatorAnalysis");
+  }
+
+
+}
+
+
 /**
  * export_xml
  * Bind event handler to "Generate BEAST XML" button
@@ -48,12 +61,6 @@ function export_xml() {
   let beast = beast_xml.children[0],
       taxa = beast.getElementsByTagName('taxa').taxa,  // HTMLCollection
       aln = beast.getElementsByTagName('alignment').alignment;  // HTMLCollection
-
-  /*
-  // to remove a taxon
-  let taxon = taxa.children[0];
-  taxa.removeChild(taxon);
-  */
 
   // append user taxa and sequences
   for (let i=0; i < alignment.length; i++) {
@@ -96,6 +103,11 @@ function export_xml() {
   let site_model = generate_site_model(),
       default_model = beast.getElementsByTagName("HKYModel")[0];
   beast.replaceChild(site_model, default_model);
+
+  // update MCMC settings
+  let default_mcmc = beast.getElementsByTagName("mcmc")[0],
+      user_mcmc = update_mcmc(default_mcmc);
+  beast.replaceChild(user_mcmc, default_mcmc);
 
   // serialize XML to write to file
   let serializer = new XMLSerializer();
