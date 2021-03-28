@@ -1,16 +1,15 @@
+// TODO: user cannot change bounds yet
 var bound_default = [0, Infinity]
-var priors;  //bound_default = "[0, ∞]";
-
 
 /**
  * Utility functions to create Objects that represent prior distributions.
  * @param {String} name:  name of parameter
- * @param {float} initial:  initial value
- * @param {float} mu:  log mean hyperparameter
- * @param {float} sigma:  log standard deviation hyperparameter
- * @param {float} offset:  offset hyperparameter
- * @param {float} lower:  truncate to lower bound
- * @param {float} upper: truncate to upper bound
+ * @param {number} initial:  initial value
+ * @param {number} mu:  log mean hyperparameter
+ * @param {number} sigma:  log standard deviation hyperparameter
+ * @param {number} offset:  offset hyperparameter
+ * @param {number} lower:  truncate to lower bound
+ * @param {number} upper: truncate to upper bound
  * @returns {Object}
  */
 function createLogNormal(name, initial=2.0, mu=1.0, sigma=1.25, offset=0.0, lower=0, upper=Infinity) {
@@ -21,7 +20,7 @@ function createLogNormal(name, initial=2.0, mu=1.0, sigma=1.25, offset=0.0, lowe
     obj.sigma = sigma;
     obj.offset = offset;
     obj.str = `LogNormal [${obj.mu}, ${obj.sigma}], initial=${obj.initial}`;
-    obj.bound = bound_default;
+    obj.bound = [lower, upper];
     return obj;
 }
 
@@ -260,22 +259,20 @@ function getPriorValues() {
     // Trees Tab
     prior_parameters.push("treeModel.rootHeight");
 
-    if ($("#select-treeModel").val() !== "skyline") {
-        prior_parameters.push($("#select-treeModel").val() + ".popSize");
+    let tree_model = $("#select-treeModel").val();
+    if (tree_model !== "skyline") {
+        prior_parameters.push(tree_model + ".popSize");
     }
     else
         prior_parameters.push("skyline.popSize");
 
     prior_parameters.forEach( function(param) {
         objIndex = parameters.findIndex(obj => obj.parameter === param);
-        let [lower,  upper] = parameters[objIndex].obj.bound[0];
+        let [lower, upper] = parameters[objIndex].obj.bound;
         let curr_row = [
             parameters[objIndex].parameter,
             parameters[objIndex].obj.str,
-            lower !== "n/a" ?
-                (`[${parameters[objIndex].obj.bound[0]}, ${(parameters[objIndex].obj.bound[1]) === Infinity ? 
-                    "∞" : parameters[objIndex].obj.bound[1]}]`) :
-                parameters[objIndex].obj.bound[0],
+            (lower !== "n/a") ? (`[${lower}, ${upper===Infinity ? "∞" : upper}]`) : "n/a",
             parameters[objIndex].description
         ]
         rows.push(curr_row);
