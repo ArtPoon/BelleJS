@@ -91,11 +91,28 @@ function update_mcmc(default_mcmc) {
 
   // strictClockBranchRates or discretizedBranchRates?
   let el1 = filterHTMLCollection(logs[1], "idref", "strictClockBranchRates"),
-      el2 = filterHTMLCollection(logs[1], "idref", "discretizedBranchRates");
-  if ($("#select-clock").val() === "strict") {
-    if (el1.length > 0) {
+      el2 = filterHTMLCollection(logs[1], "idref", "discretizedBranchRates"),
+      lt_trait = treelog.getElementsByTagName("trait")[0],
+      lt_el1 = filterHTMLCollection(lt_trait, "idref", "strictClockBranchRates"),
+      lt_el2 = filterHTMLCollection(lt_trait, "idref", "discretizedBranchRates");
 
-    }
+  dbr = document.createElement("discretizedBranchRates").setAttribute("idref", "branchRates"),
+      scbr = document.createElement("strictClockBranchRates").setAttribute("idref", "branchRates");
+
+  if ($("#select-clock").val() === "strict") {
+    if (el1.length === 0) logs[1].appendChild(scbr);
+    if (el2.length > 0) logs[1].removeChild(el2[0]);
+    // do same for tree log
+    if (lt_el1.length === 0) lt_trait.appendChild(scbr);
+    if (lt_el2.length > 0) lt_trait.removeChild(lt_el2[0]);
+  }
+  else {
+    // uncorrelated relaxed clock
+    if (el1.length > 0) logs[1].removeChild(el1[[0]]);
+    if (el2.length === 0) logs[1].appendChild(dbr);
+
+    if (lt_el1.length > 0) lt_trait.removeChild(lt_el1[[0]]);
+    if (lt_el2.length === 0) lt_trait.appendChild(dbr);
   }
 
   // === tree log settings ====================
@@ -103,8 +120,6 @@ function update_mcmc(default_mcmc) {
   treelog.setAttribute("fileName", $("#trees_file_name").val());
 
 
-
-  //
 
   return default_mcmc;
 }
