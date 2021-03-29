@@ -37,7 +37,41 @@ function generate_site_model() {
 }
 
 
+function filterHTMLCollection(collection, attr, value) {
+  return Array.from(collection.children)
+      .filter(x=>x.getAttribute(attr) === value);
+}
+
+
+/**
+ * Convenience function - modify contents of <log> (fileLog) based on
+ * active prior distributions.
+ * @param html_collection
+ * @param idref
+ */
+function update_log_settings(html_collection, idref) {
+  let el = filterHTMLCollection(html_collection, "idref", idref);
+  if (priors.filter(x=>x.parameter===idref)[0].active) {
+    if (el.length === 0) {
+      // restore element
+      let nel = document.createElement("parameter");
+      nel.setAttribute("idref", idref);
+      html_collection.appendChild(nel);
+    } // otherwise no action necessary
+  } else {
+    if (el.length > 0) {
+      // delete element
+      html_collection.removeChild(el[0]);
+    } // otherwise no action necessary
+  }
+}
+
+
 function update_mcmc(default_mcmc) {
+  let prior = default_mcmc.getElementsByTagName("prior")[0],
+      logs = default_mcmc.getElementsByTagName("log"),
+      treelog = default_mcmc.getElementsByTagName("logTree")[0];
+
   // modify top element attributes
   default_mcmc.setAttribute("chainLength", $("#length_of_chain").val());
   if ($("#create_ops_file")[0].checked) {
@@ -45,6 +79,32 @@ function update_mcmc(default_mcmc) {
   } else {
     default_mcmc.removeAttribute("operatorAnalysis");
   }
+
+  // screen log settings
+  logs[0].setAttribute("logEvery", $("#echo_to_screen").val());
+
+  // === file log settings ======================
+  logs[1].setAttribute("logEvery", $("#log_parameters_every").val());
+  logs[1].setAttribute("fileName", $("#log_file_name").val());
+
+  priors.map(x => update_log_settings(logs[1], x.parameter));
+
+  // strictClockBranchRates or discretizedBranchRates?
+  let el1 = filterHTMLCollection(logs[1], "idref", "strictClockBranchRates"),
+      el2 = filterHTMLCollection(logs[1], "idref", "discretizedBranchRates");
+  if ($("#select-clock").val() === "strict") {
+    if (el1.length > 0) {
+
+    }
+  }
+
+  // === tree log settings ====================
+  treelog.setAttribute("logEvery", $("#log_parameters_every").val());
+  treelog.setAttribute("fileName", $("#trees_file_name").val());
+
+
+
+  //
 
   return default_mcmc;
 }
@@ -104,7 +164,7 @@ function export_xml() {
       default_model = beast.getElementsByTagName("HKYModel")[0];
   beast.replaceChild(site_model, default_model);
 
-  // update MCMC settings
+  // update MCMC settings - FIXME: replaceChild might be unnecessary
   let default_mcmc = beast.getElementsByTagName("mcmc")[0],
       user_mcmc = update_mcmc(default_mcmc);
   beast.replaceChild(user_mcmc, default_mcmc);

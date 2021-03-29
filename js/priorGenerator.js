@@ -21,7 +21,7 @@ function LogNormalPrior(idref, initial=1.0, mu=1.0, sigma=1.0, offset=0.0, lower
   this.str = function() {
     return `LogNormal [${this.mu}, ${this.sigma}], initial=${this.initial}`
   };
-  
+
   this.operator = function() {
     let op = document.createElement("scaleOperator"),
         par = document.createElement("parameter");
@@ -64,7 +64,26 @@ function InversePrior(idref, initial=1.0, lower=0, upper=Infinity) {
   this.idref = idref;
   this.initial = initial;
   this.bound = [lower, upper];
+
   this.str = function() { return `1/x, initial=${this.initial}` };
+
+  this.element = function() {
+    let el = document.createElement("oneOnXPrior"),
+        par = document.createElement("parameter");
+    par.setAttribute("idref", this.idref);
+    el.appendChild(par);
+    return el;
+  }
+
+  this.operator = function() {
+    let op = document.createElement("scaleOperator"),
+        par = document.createElement("parameter");
+    op.setAttribute("scaleFactor", "0.75");
+    op.setAttribute("weight", "3");
+    par.setAttribute("idref", this.idref);
+    op.appendChild(par);
+    return op;
+  }
 }
 
 function GammaPrior(idref, initial=2.0, shape=0.5, scale=2, offset=0.0,
@@ -129,13 +148,44 @@ function DirichletPrior(idref) {
   this.str = function() {
     return `Dirichlet [${this.alpha}, ${this.sumsto}]`;
   };
+
+  this.element = function() {
+    let el = document.createElement("dirichletPrior"),
+        par = document.createElement("parameter");
+    el.setAttribute("alpha", this.alpha.toString());
+    el.setAttribute("sumsTo", this.sumsto.toString());
+    par.setAttribute("idref", this.idref);
+    el.appendChild(par);
+    return el;
+  }
+
+  this.operator = function() {
+    let op = document.createElement("deltaExchange"),
+        par = document.createElement("parameter");
+    op.setAttribute("delta", "0.01");
+    op.setAttribute("weight", "1");
+    par.setAttribute("idref", this.idref);
+    op.appendChild(par);
+    return op;
+  }
 }
 
 function DefaultPrior(idref) {
-  // use tree prior only
+  // use tree prior only (tree model rootheight)
   this.idref = idref;
   this.bound = [0, Infinity];
   this.str = function() { return `Using Tree Prior in [0, ∞]`};
+  this.element = function() { return null; };
+
+  this.operator = function() {
+    let op = document.createElement("scaleOperator"),
+        par = document.createElement("parameter");
+    op.setAttribute("scaleFactor", "0.75");
+    op.setAttribute("weight", "3");
+    par.setAttribute("idref", this.idref);
+    op.appendChild(par);
+    return op;
+  }
 }
 
 function PoissonPrior(idref) {
