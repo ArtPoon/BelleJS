@@ -14,6 +14,7 @@ function changeSubModel() {
     freq[0].disabled = true;
   }
   else {
+    freq.val("Estimated");
     freq[0].disabled = false;
   }
   kappa.active = submod !== "JC";
@@ -223,6 +224,8 @@ $( function() {
   });
 
   $('#priors-tab').on("click", function() {
+    // refresh priors table
+    $("#priorTable tbody").empty();
 
     let prior_table = d3.select("#priorTable tbody"),
         columns = ['Parameter', 'Prior', 'Bound', 'Description'],
@@ -240,7 +243,15 @@ $( function() {
     let rows = prior_table.selectAll("tr")
         .data(row_data)
         .enter()
-        .append("tr");
+        .append("tr")
+        .on("click", function(d) {
+          // TODO: spawn modal window to change prior hyperparameters
+          console.log(d);
+        })
+        .on("mouseover", function(){
+          d3.select(this).style("background-color", "#e2e2e2");}) //mouseover highlight
+        .on("mouseout", function(){
+          d3.select(this).style("background-color", null);});  //mouseout unhighlight
 
     let cells = rows.selectAll("td")
         .data(function(row) {

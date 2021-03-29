@@ -46,7 +46,7 @@ function update_mcmc(default_mcmc) {
     default_mcmc.removeAttribute("operatorAnalysis");
   }
 
-
+  return default_mcmc;
 }
 
 

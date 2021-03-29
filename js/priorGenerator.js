@@ -21,9 +21,29 @@ function LogNormalPrior(idref, initial=1.0, mu=1.0, sigma=1.0, offset=0.0, lower
   this.str = function() {
     return `LogNormal [${this.mu}, ${this.sigma}], initial=${this.initial}`
   };
-  // TODO: generate operator element
+  
   this.operator = function() {
+    let op = document.createElement("scaleOperator"),
+        par = document.createElement("parameter");
+    op.setAttribute("scaleFactor", "0.75");
+    op.setAttribute("weight", "1");
 
+    par.setAttribute("idref", this.idref);
+    op.appendChild(par);
+    return op;
+  }
+
+  this.element = function() {
+    let el = document.createElement("logNormalPrior"),
+        par = document.createElement("parameter");
+
+    el.setAttribute("mu", this.mu.toString());
+    el.setAttribute("sigma", this.sigma.toString());
+    el.setAttribute("offset", this.offset.toString());
+
+    par.setAttribute("idref", this.idref);
+    el.appendChild(par);
+    return el;
   }
 }
 
