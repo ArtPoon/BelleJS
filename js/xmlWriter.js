@@ -1,6 +1,5 @@
 /**
  * Create element to append to BEAST XML based on site model settings.
- * @param model_name
  * @returns {HTMLElement}
  */
 function generate_site_model() {
@@ -170,6 +169,25 @@ function updateBranchRates(beast) {
 
   let dbr = document.createElementNS("", "discretizedBranchRates");
   dbr.setAttributeNS("", "idref", "branchRates");
+
+  // ========= update <rateStatistic> ==========
+  let rateStatistic = beast.getElementsByTagName("rateStatistic")[0],
+      rs_el = filterHTMLCollection(rateStatistic, "idref", "branchRates");
+  if (rs_el.length === 0)
+    alert("Failed to locate branchRates element in rateStatistic");
+
+  if (clock_option === 'strict') {
+    if (rs_el[0].tagName === 'discretizedBranchRates') {
+      rateStatistic.removeChild(rs_el[0]);
+      rateStatistic.appendChild(scbr);
+    }
+  }
+  else {
+    if (rs_el[0].tagName === 'strictClockBranchRates') {
+      rateStatistic.removeChild(rs_el[0]);
+      rateStatistic.appendChild(dbr);
+    }
+  }
 
   // ========= update <treeDataLikelihood> =========
   let treeDataLikelihood = beast.getElementsByTagName("treeDataLikelihood")[0],
