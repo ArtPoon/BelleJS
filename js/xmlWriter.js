@@ -95,17 +95,44 @@ function update_prior_xml(html_collection, idref) {
 }
 
 
-function update_mcmc(default_mcmc) {
-  let prior = default_mcmc.getElementsByTagName("prior")[0],
-      logs = default_mcmc.getElementsByTagName("log"),
-      treelog = default_mcmc.getElementsByTagName("logTree")[0];
+function update_operators(beast) {
+  let operators = beast.getElementsByTagName("operators")[0];
+
+  for (let this_prior of priors) {
+    let el = filterHTMLCollectionByChild(operators, "idref", this_prior.parameter);
+    if (this_prior.active) {
+      if (el.length === 0) {
+        let nel = this_prior.obj.operator();
+        if (nel !== null) {
+          operators.appendChild(nel);
+        }
+      }
+    }
+    else {
+      if (el.length > 0) {
+        operators.removeChild(el[0]);
+      }
+    }
+  }
+}
+
+
+/**
+ * Update <mcmc> element in BEAST XML
+ * @param beast:  parent Element
+ */
+function update_mcmc(beast) {
+  let mcmc = beast.getElementsByTagName("mcmc")[0],
+      prior = mcmc.getElementsByTagName("prior")[0],
+      logs = mcmc.getElementsByTagName("log"),
+      treelog = mcmc.getElementsByTagName("logTree")[0];
 
   // modify top element attributes
-  default_mcmc.setAttribute("chainLength", $("#length_of_chain").val());
+  mcmc.setAttribute("chainLength", $("#length_of_chain").val());
   if ($("#create_ops_file")[0].checked) {
-    default_mcmc.setAttribute("operatorAnalysis", $("#ops_file_name").val());
+    mcmc.setAttribute("operatorAnalysis", $("#ops_file_name").val());
   } else {
-    default_mcmc.removeAttribute("operatorAnalysis");
+    mcmc.removeAttribute("operatorAnalysis");
   }
 
   // modify <prior> tag contents
@@ -227,10 +254,11 @@ function export_xml() {
       default_model = beast.getElementsByTagName("HKYModel")[0];
   beast.replaceChild(site_model, default_model);
 
-  // update MCMC settings - FIXME: replaceChild might be unnecessary
-  let default_mcmc = beast.getElementsByTagName("mcmc")[0];
-  update_mcmc(default_mcmc);
-  //beast.replaceChild(user_mcmc, default_mcmc);
+  // update operators
+  update_operators(beast);
+
+  // update MCMC settings
+  update_mcmc(beast);
 
   // serialize XML to write to file
   let serializer = new XMLSerializer();
