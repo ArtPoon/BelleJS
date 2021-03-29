@@ -75,24 +75,77 @@ function updateStartingTree(beast) {
   let startingTree = beast.getElementsByTagName("constantSize")[0],
       param = startingTree.getElementsByTagName("parameter")[0],
       skyline = priors.filter(x=>x.parameter==="skyline.popSize")[0],
-      constant = priors.filter(x=>x.parameter==="constant.popSize")[0];
+      constant = priors.filter(x=>x.parameter==="constant.popSize")[0],
+      treeModel = beast.getElementsByTagName("treeModel")[0],
+      coalescentTree = treeModel.getElementsByTagName("coalescentTree"),
+      upgmaTree = treeModel.getElementsByTagName("upgmaTree"),
+      coalescentSimulator = beast.getElementsByTagName("coalescentSimulator"),
+      rescaledTree = beast.getElementsByTagName("rescaledTree");
+      id = skyline.active ? "initialDemo" : "constant";
 
   // Constant size or Bayesian Skyline
+  startingTree.setAttribute("id", id);
+  param.setAttribute("id", `${id}.popSize`);
+
   if (skyline.active) {
-    startingTree.setAttribute("id", "initialDemo");
     param.setAttribute("value", "100.0");
-    param.setAttribute("id", "initialDemo.popSize");
     if (param.hasAttribute("lower")) {
       param.removeAttribute("lower");
     }
   }
   else {
-    startingTree.setAttribute("id", "constant");
-    var val = priors.filter(x=>x.parameter==="constant.popSize")[0].obj.initial;
-    param.setAttribute("value", val.toFixed(1).toString());
-    param.setAttribute("id", "constant.popSize");
+    param.setAttribute("value", constant.obj.initial.toFixed(1).toString());
     if (!param.hasAttribute("lower")) {
       param.setAttribute("lower", "0.0");
+    }
+  }
+
+  if ($('#UPGMA-starting-tree').is(":checked")) {
+    // UPGMA Starting Tree
+    if (coalescentSimulator.length > 0) {
+      let new_rescaledTree = document.createElementNS("", "rescaledTree"),
+          patterns = document.createElement("patterns"),
+          distanceMatrix = document.createElementNS("", "distanceMatrix"),
+          new_upgmaTree = document.createElementNS("", "upgmaTree"),
+          alignment = document.createElement("alignment");
+      
+      new_rescaledTree.setAttribute("id", "startingTree");
+      distanceMatrix.setAttribute("correction", "JC");
+      alignment.setAttribute("idref", "alignment");
+      patterns.appendChild(alignment);
+      distanceMatrix.appendChild(patterns);
+      new_upgmaTree.appendChild(distanceMatrix);
+      new_rescaledTree.appendChild(new_upgmaTree);
+      beast.replaceChild(new_rescaledTree, coalescentSimulator[0]);
+    }
+
+    if (coalescentTree.length > 0) {
+      let treeModel_upgma = document.createElementNS("", "upgmaTree");
+      treeModel_upgma.setAttribute("idref", "startingTree");
+      treeModel.replaceChild(treeModel_upgma, coalescentTree[0]);
+    }
+  }
+  else {
+    // Random Starting Tree
+    if (rescaledTree.length > 0) {
+      let new_coalescentSimulator = document.createElementNS("", "coalescentSimulator"),
+          taxa = document.createElement("taxa"),
+          constantSize = document.createElementNS("", "constantSize");
+      new_coalescentSimulator.setAttribute("id", "startingTree");
+      taxa.setAttribute("idref", "taxa");
+      constantSize.setAttribute("idref", id);
+      new_coalescentSimulator.appendChild(taxa);
+      new_coalescentSimulator.appendChild(constantSize);
+      beast.replaceChild(new_coalescentSimulator, rescaledTree[0]);
+    }
+    else {
+      coalescentSimulator[0].getElementsByTagName("constantSize")[0].setAttribute("idref", id);
+    }
+
+    if (upgmaTree.length > 0) {
+      let treeModel_coalescentTree = document.createElementNS("", "coalescentTree");
+      treeModel_coalescentTree.setAttribute("idref", "startingTree");
+      treeModel.replaceChild(treeModel_coalescentTree, upgmaTree[0]);
     }
   }
 }
@@ -340,7 +393,7 @@ function export_xml() {
     aln.appendChild(seq);
   }
 
-  update_tree_prior(beast);
+  updateStartingTree(beast);
 
   // replace substitution model
   let site_model = generate_site_model(),
