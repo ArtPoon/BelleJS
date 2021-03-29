@@ -72,6 +72,14 @@ function update_log_settings(html_collection, idref) {
   }
 }
 
+
+/**
+ * Update <prior> element within <mcmc>.  Members of <prior> carry <parameter>
+ *   children that we associate with active or inactive prior distributions.
+ *
+ * @param html_collection
+ * @param idref
+ */
 function update_prior_xml(html_collection, idref) {
   let el = filterHTMLCollectionByChild(html_collection, "idref", idref),
       this_prior = priors.filter(x=>x.parameter===idref)[0];
@@ -95,6 +103,10 @@ function update_prior_xml(html_collection, idref) {
 }
 
 
+/**
+ * Update <operators> element of XML based on active prior distributions.
+ * @param beast:  parent Element
+ */
 function update_operators(beast) {
   let operators = beast.getElementsByTagName("operators")[0];
 
@@ -112,6 +124,88 @@ function update_operators(beast) {
       if (el.length > 0) {
         operators.removeChild(el[0]);
       }
+    }
+  }
+}
+
+
+/**
+ * Update <strictClockBranchRates> or <discretizedBranchRates> elements
+ * throughout XML.  Since tagName is not writable, we have to create new
+ * Elements and replace the existing ones.
+ *
+ * @param beast:  parent Element
+ */
+function updateBranchRates(beast) {
+  let clock_option = $("#select-clock").val();
+
+  let scbr = document.createElementNS("", "strictClockBranchRates");
+  scbr.setAttributeNS("", "idref", "branchRates");
+
+  let dbr = document.createElementNS("", "discretizedBranchRates");
+  dbr.setAttributeNS("", "idref", "branchRates");
+
+  // ========= update <treeDataLikelihood> =========
+  let treeDataLikelihood = beast.getElementsByTagName("treeDataLikelihood")[0],
+      tdl_el = filterHTMLCollection(treeDataLikelihood, "idref", "branchRates");
+  if (tdl_el.length === 0)
+    alert("Failed to locate branchRates element in treeDataLikelihood");
+
+  if (clock_option === 'strict') {
+    if (tdl_el[0].tagName === 'discretizedBranchRates') {
+      treeDataLikelihood.removeChild(tdl_el[0]);
+      treeDataLikelihood.appendChild(scbr);
+    }
+  }
+  else {
+    if (tdl_el[0].tagName === "strictClockBranchRates") {
+      treeDataLikelihood.removeChild(tdl_el[0]);
+      treeDataLikelihood.appendChild(dbr);
+    }
+  }
+
+  // ========= update <mcmc> ========
+  let mcmc = beast.getElementsByTagName("mcmc")[0],
+      prior = mcmc.getElementsByTagName("prior")[0],
+      logs = mcmc.getElementsByTagName("log"),
+      treelog = mcmc.getElementsByTagName("logTree")[0];
+
+  let el = filterHTMLCollection(logs[1], "idref", "branchRates"),
+      lt_trait = treelog.getElementsByTagName("trait")[0],
+      lt_el = filterHTMLCollection(lt_trait, "idref", "branchRates"),
+      pr_el = filterHTMLCollection(prior, "idref", "branchRates");
+
+  if (el.length === 0 || lt_el.length === 0) {
+    alert("Failed to match element with idref 'branchRates' in <log>.");
+  }
+
+  if (clock_option === "strict") {
+    if (el[0].tagName === "discretizedBranchRates") {
+      logs[1].removeChild(el[0]);
+      logs[1].appendChild(scbr);
+    }
+    if (lt_el[0].tagName === "discretizedBranchRates") {
+      lt_trait.removeChild(lt_el[0]);
+      lt_trait.appendChild(scbr);
+    }
+    if (pr_el[0].tagName === "discretizedBranchRates") {
+      prior.removeChild(pr_el[0]);
+      prior.appendChild(scbr);
+    }
+  }
+  else {
+    // uncorrelated relaxed clock
+    if (el[0].tagName === "strictClockBranchRates") {
+      logs[1].removeChild(el[0]);
+      logs[1].appendChild(dbr);
+    }
+    if (lt_el[0].tagName === "strictClockBranchRates") {
+      lt_trait.removeChild(lt_el[0]);
+      lt_trait.appendChild(dbr);
+    }
+    if (pr_el[0].tagName === "strictClockBranchRates") {
+      prior.removeChild(pr_el[0]);
+      prior.appendChild(dbr);
     }
   }
 }
@@ -146,53 +240,6 @@ function update_mcmc(beast) {
   logs[1].setAttribute("fileName", $("#log_file_name").val());
 
   priors.map(x => update_log_settings(logs[1], x.parameter));
-
-
-  // strictClockBranchRates or discretizedBranchRates?
-  let el = filterHTMLCollection(logs[1], "idref", "branchRates"),
-      lt_trait = treelog.getElementsByTagName("trait")[0],
-      lt_el = filterHTMLCollection(lt_trait, "idref", "branchRates"),
-      pr_el = filterHTMLCollection(prior, "idref", "branchRates");
-
-  if (el.length === 0 || lt_el.length === 0) {
-    alert("Failed to match element with idref 'branchRates' in <log>.");
-  }
-
-  if ($("#select-clock").val() === "strict") {
-    let scbr = document.createElementNS("", "strictClockBranchRates");
-    scbr.setAttributeNS("", "idref", "branchRates");
-
-    if (el[0].tagName === "discretizedBranchRates") {
-      logs[1].removeChild(el[0]);
-      logs[1].appendChild(scbr);
-    }
-    if (lt_el[0].tagName === "discretizedBranchRates") {
-      lt_trait.removeChild(lt_el[0]);
-      lt_trait.appendChild(scbr);
-    }
-    if (pr_el[0].tagName === "discretizedBranchRates") {
-      prior.removeChild(pr_el[0]);
-      prior.appendChild(scbr);
-    }
-  }
-  else {
-    // uncorrelated relaxed clock
-    let dbr = document.createElementNS("", "discretizedBranchRates");
-    dbr.setAttributeNS("", "idref", "branchRates");
-
-    if (el[0].tagName === "strictClockBranchRates") {
-      logs[1].removeChild(el[0]);
-      logs[1].appendChild(dbr);
-    }
-    if (lt_el[0].tagName === "strictClockBranchRates") {
-      lt_trait.removeChild(lt_el[0]);
-      lt_trait.appendChild(dbr);
-    }
-    if (pr_el[0].tagName === "strictClockBranchRates") {
-      prior.removeChild(pr_el[0]);
-      prior.appendChild(dbr);
-    }
-  }
 
   // === tree log settings ====================
   treelog.setAttribute("logEvery", $("#log_parameters_every").val());
@@ -259,6 +306,8 @@ function export_xml() {
 
   // update MCMC settings
   update_mcmc(beast);
+
+  updateBranchRates(beast);
 
   // serialize XML to write to file
   let serializer = new XMLSerializer();
