@@ -96,8 +96,10 @@ function update_mcmc(default_mcmc) {
       lt_el1 = filterHTMLCollection(lt_trait, "idref", "strictClockBranchRates"),
       lt_el2 = filterHTMLCollection(lt_trait, "idref", "discretizedBranchRates");
 
-  dbr = document.createElement("discretizedBranchRates").setAttribute("idref", "branchRates"),
-      scbr = document.createElement("strictClockBranchRates").setAttribute("idref", "branchRates");
+  let dbr = document.createElement("discretizedBranchRates")
+          .setAttribute("idref", "branchRates"),
+      scbr = document.createElement("strictClockBranchRates")
+          .setAttribute("idref", "branchRates");
 
   if ($("#select-clock").val() === "strict") {
     if (el1.length === 0) logs[1].appendChild(scbr);
@@ -120,6 +122,8 @@ function update_mcmc(default_mcmc) {
   treelog.setAttribute("fileName", $("#trees_file_name").val());
 
 
+  dbr = null;  // is it necessary to clean up after ourselves?
+  scbr = null;
 
   return default_mcmc;
 }
