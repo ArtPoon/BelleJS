@@ -72,12 +72,15 @@ function update_log_settings(html_collection, idref) {
   }
 }
 
-function update_tree_prior(default_tree_prior) {
-  let param = default_tree_prior.getElementsByTagName("parameter")[0];
+function updateStartingTree(beast) {
+  let startingTree = beast.getElementsByTagName("constantSize")[0],
+      param = startingTree.getElementsByTagName("parameter")[0],
+      skyline = priors.filter(x=>x.parameter==="skyline.popSize")[0],
+      constant = priors.filter(x=>x.parameter==="constant.popSize")[0];
 
   // Constant size or Bayesian Skyline
-  if (priors.filter(x=>x.parameter==="skyline.popSize")[0].active) {
-    default_tree_prior.setAttribute("id", "initialDemo");
+  if (skyline.active) {
+    startingTree.setAttribute("id", "initialDemo");
     param.setAttribute("value", "100.0");
     param.setAttribute("id", "initialDemo.popSize");
     if (param.hasAttribute("lower")) {
@@ -85,7 +88,7 @@ function update_tree_prior(default_tree_prior) {
     }
   }
   else {
-    default_tree_prior.setAttribute("id", "constant");
+    startingTree.setAttribute("id", "constant");
     var val = priors.filter(x=>x.parameter==="constant.popSize")[0].obj.initial;
     param.setAttribute("value", val.toFixed(1).toString());
     param.setAttribute("id", "constant.popSize");
@@ -319,8 +322,7 @@ function export_xml() {
     aln.appendChild(seq);
   }
 
-  let default_tree_prior = beast.getElementsByTagName("constantSize")[0];
-  update_tree_prior(default_tree_prior);
+  update_tree_prior(beast);
 
   // replace substitution model
   let site_model = generate_site_model(),
