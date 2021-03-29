@@ -16,16 +16,64 @@ function changeSubModel() {
   else {
     freq[0].disabled = false;
   }
-  kappa.obj.active = submod !== "JC";
+  kappa.active = submod !== "JC";
 }
 
 function changeBaseFreq() {
-  console.log('foo');
   let freq = priors.filter(x => x.parameter === 'frequencies')[0];
   if ($("#select-submodel").val() !== "JC") {
-    freq.obj.active = ($("#select-basefreq").val() === "Estimated");
+    freq.active = ($("#select-basefreq").val() === "Estimated");
   } else {
-    freq.obj.active = false;
+    freq.active = false;
+  }
+}
+
+function changeClockType() {
+  let clock_rate = priors.filter(x => x.parameter === 'clock.rate')[0],
+      relaxed = priors.filter(x => x.parameter.startsWith('uc')),
+      relaxed_dist = $("#select-relaxed-dist")[0];
+
+  relaxed.map(x => x.active = false);
+  if ($("#select-clock").val() === "strict") {
+    clock_rate.active = true;
+    relaxed_dist.disabled = true;
+  }
+  else {
+    // uncorrelated
+    relaxed_dist.disabled = false;
+    clock_rate.active = false;
+    switch (relaxed_dist.value) {
+      case "lognormal":
+        priors.filter(x => x.parameter.startsWith('ucld'))
+            .map(x => x.active = true);
+        break;
+    }
+  }
+}
+
+
+function changeTreePrior() {
+  let select_tree_prior = $("#select-treeModel")[0],
+      constant = priors.filter(x => x.parameter === 'constant.popSize')[0],
+      skyline = priors.filter(x => x.parameter === 'skyline.popSize')[0],
+      rows = $("table.treePriorTable tr");
+
+  if (select_tree_prior.value === "constant") {
+    constant.active = true;
+    skyline.active = false;
+    rows.filter(".parGrow").hide();
+    rows.filter(".parSkyline").hide();
+  }
+  else if (select_tree_prior.value === "skyline") {
+    constant.active = false;
+    skyline.active = true;
+    rows.filter(".parGrow").hide();
+    rows.filter(".parSkyline").show();
+  }
+  else {
+    // exponential, logistic, expansion
+    rows.filter(".parGrow").show();
+    rows.filter(".parSkyline").hide();
   }
 }
 
@@ -36,30 +84,6 @@ function updateNCat(val) {
 
 function activateNCat(val) {
   $('#ncat-range')[0].disabled = !(val === 'G' || val === 'GI');
-}
-
-
-function activateRelaxed(val) {
-  $('#select-relaxed-dist')[0].disabled = val !== 'uncorrelated';
-}
-
-
-function configureTreeModel(val) {
-  var rows = $("table.treePriorTable tr");
-
-  if (val==='constant') {
-    rows.filter(".parGrow").hide();
-    rows.filter(".parSkyline").hide();
-  }
-  else if (val==='skyline') {
-    rows.filter(".parGrow").hide();
-    rows.filter(".parSkyline").show();
-  }
-  else {
-    // exponential, logistic, expansion
-    rows.filter(".parGrow").show();
-    rows.filter(".parSkyline").hide();
-  }
 }
 
 
@@ -79,6 +103,8 @@ $( document ).ready(function() {
   // trigger event handlers to activate/inactivate priors
   changeSubModel();
   changeBaseFreq();
+  changeClockType();
+  changeTreePrior();
 });
 
 
@@ -197,21 +223,34 @@ $( function() {
   });
 
   $('#priors-tab').on("click", function() {
-    // Remove Table
-    var priors_table = d3.select("#priorTable");
 
-    priors_table.selectAll('tbody').remove();
-    var details = getPriorValues();
-    
-    priors_table.append('tbody')
-        .selectAll('tr')
-        .data(details).enter()
-        .append("tr")
-        .selectAll("td")
-        .data(function(d) { return d; }).enter()
+    let prior_table = d3.select("#priorTable tbody"),
+        columns = ['Parameter', 'Prior', 'Bound', 'Description'],
+        row_data = priors.filter(x => x.active)
+            .map(function(row) {
+          let [lower, upper] = row.obj.bound;
+          return {
+            'Parameter': row.parameter,
+            'Prior': row.obj.str(),
+            'Bound': (lower !== "n/a") ? (`[${lower}, ${upper===Infinity ? "∞" : upper}]`) : "n/a",
+            'Description': row.description
+          }
+        });
+
+    let rows = prior_table.selectAll("tr")
+        .data(row_data)
+        .enter()
+        .append("tr");
+
+    let cells = rows.selectAll("td")
+        .data(function(row) {
+          return columns.map(function(column) {
+            return {column: column, value: row[column]};
+          })
+        })
+        .enter()
         .append("td")
-        .text(function(d) { return d; })
-        .attr("class", "leftj");
+        .text(function(d) { return (d.value); });
   });
 
 } );

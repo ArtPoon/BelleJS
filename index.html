@@ -243,9 +243,9 @@
   <div id="tab-clocks">
     <table>
       <tr>
-        <td class="rightj"><label>Clock type:</label></td>
+        <td class="rightj"><label for="select-clock">Clock type:</label></td>
         <td>
-          <select id="select-clock" onchange="activateRelaxed(this.value)">
+          <select id="select-clock" onchange="changeClockType();">
             <option value="strict">Strict clock</option>
             <option value="uncorrelated">Uncorrelated relaxed clock</option>
             <option value="random-local" disabled>Random local clock</option>
@@ -257,7 +257,7 @@
       <tr>
         <td class="rightj"><label>Relaxed Distribution:</label></td>
         <td>
-          <select id="select-relaxed-dist" disabled>
+          <select id="select-relaxed-dist" onchange="changeClockType()" disabled>
             <option value="lognormal">Lognormal</option>
             <option value="gamma" disabled>Gamma</option>
             <option value="exponential" disabled>Exponential</option>
@@ -273,7 +273,7 @@
       <tr>
         <td class="rightj"><label>Tree prior:</label></td>
         <td>
-          <select id="select-treeModel" onchange="configureTreeModel(this.value)">
+          <select id="select-treeModel" onchange="changeTreePrior()">
             <option value="constant">Coalescent: Constant Size</option>
             <option value="exponential" disabled>Coalescent: Exponential Growth</option>
             <option value="logistic" disabled>Coalescent: Logistic Growth</option>
@@ -401,7 +401,7 @@
     </p>
   </div>
 
-  <div id="tab-priors">
+  <div id="tab-priors" onclick="getPriorValues();">
     <table id="priorTable" width="100%">
       <thead>
         <tr>
@@ -411,6 +411,9 @@
           <th>Description</th>
         </tr>
       </thead>
+      <tbody>
+
+      </tbody>
     </table>
   </div>
 

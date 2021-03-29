@@ -12,7 +12,6 @@ var priors;
  * @returns {Object}
  */
 function LogNormalPrior(idref, initial=1.0, mu=1.0, sigma=1.0, offset=0.0, lower=0, upper=Infinity) {
-  this.active = true;
   this.idref = idref;
   this.initial = initial;
   this.mu = mu;
@@ -30,7 +29,6 @@ function LogNormalPrior(idref, initial=1.0, mu=1.0, sigma=1.0, offset=0.0, lower
 
 
 function NormalPrior(idref, initial=0.0, mean=0.0, stdev=1.0, lower=-Infinity, upper=Infinity) {
-  this.active = true;
   this.idref = idref;
   this.initial = initial;
   this.mean = mean;
@@ -43,7 +41,6 @@ function NormalPrior(idref, initial=0.0, mean=0.0, stdev=1.0, lower=-Infinity, u
 function InversePrior(idref, initial=1.0, lower=0, upper=Infinity) {
   // reciprocal distribution
   // used for constant population size under coalescent
-  this.active = true;
   this.idref = idref;
   this.initial = initial;
   this.bound = [lower, upper];
@@ -52,7 +49,6 @@ function InversePrior(idref, initial=1.0, lower=0, upper=Infinity) {
 
 function GammaPrior(idref, initial=2.0, shape=0.5, scale=2, offset=0.0,
                     lower=0, upper=Infinity) {
-  this.active = true;
   this.idref = idref;
   this.initial = initial;
   this.shape = shape;
@@ -65,7 +61,6 @@ function GammaPrior(idref, initial=2.0, shape=0.5, scale=2, offset=0.0,
 
 function LaplacePrior(idref, initial=0.1, mean=0.0, scale=1.0, lower=0,
                       upper=Infinity) {
-  this.active = true;
   this.idref = idref;
   this.initial = initial;
   this.mean = mean;
@@ -78,7 +73,6 @@ function LaplacePrior(idref, initial=0.1, mean=0.0, scale=1.0, lower=0,
 }
 
 function FixedValuePrior(idref, initial=1.0) {
-  this.active = true;
   this.idref = idref;
   this.initial = initial;
   this.bound = ['n/a', ];
@@ -86,7 +80,6 @@ function FixedValuePrior(idref, initial=1.0) {
 }
 
 function UniformPrior(idref, initial=0.5, lower=0, upper=1) {
-  this.active = true;
   this.idref = idref;
   this.initial = initial;
   this.bound = [lower, upper];
@@ -97,7 +90,6 @@ function UniformPrior(idref, initial=0.5, lower=0, upper=1) {
 
 function ExponentialPrior(idref, initial=0.5, mean=0.5, offset=0,
                           lower=0, upper=Infinity) {
-  this.active = true;
   this.idref = idref;
   this.initial=initial;
   this.mean = mean;
@@ -110,7 +102,6 @@ function ExponentialPrior(idref, initial=0.5, mean=0.5, offset=0,
 
 function DirichletPrior(idref) {
   // unusual prior in that BEAUti does not permit user to change hyperparameters
-  this.active = true;
   this.idref = idref;
   this.alpha = 1.0;
   this.sumsto = 1.0;
@@ -122,14 +113,12 @@ function DirichletPrior(idref) {
 
 function DefaultPrior(idref) {
   // use tree prior only
-  this.active = true;
   this.idref = idref;
   this.bound = [0, Infinity];
   this.str = function() { return `Using Tree Prior in [0, ∞]`};
 }
 
 function PoissonPrior(idref) {
-  this.active = true;
   this.idref = idref;
   this.rate = 0.693147;  // BEAUti v.1.10.4 does not allow this to change
   this.bound = ['n/a', ];
@@ -144,158 +133,114 @@ priors = [
   {
     parameter: "kappa",
     obj: new LogNormalPrior('kappa'),
-    description: "HKY transition-transversion parameter"
+    description: "HKY transition-transversion parameter",
+    active: true
   },
   {
     parameter: "gtr.rates",
     obj: new DirichletPrior("gtr.rates"),
-    description: "GTR transition rates parameter"
+    description: "GTR transition rates parameter",
+    active: false
   },
   {
     parameter: "kappa1",
     obj: new LogNormalPrior("kappa1"),
-    description: "TN93 1st transition-transversion parameter"
+    description: "TN93 1st transition-transversion parameter",
+    active: false
   },
   {
     parameter: "kappa2",
     obj: new LogNormalPrior("kappa2"),
-    description: "TN93 2nd transition-transversion parameter"
+    description: "TN93 2nd transition-transversion parameter",
+    active: false
   },
   {
     parameter: "frequencies",
     obj: new DirichletPrior("frequencies"),
-    description: "base frequencies"
+    description: "base frequencies",
+    active: true
   },
   {
     parameter: "alpha",
     obj: new ExponentialPrior("alpha"),
-    description: "gamma shape parameter"
+    description: "gamma shape parameter",
+    active: false
   },
   {
     parameter: "pInv",
     obj: new UniformPrior("pInv"),
-    description: "proportion of invariant sites parameter"
+    description: "proportion of invariant sites parameter",
+    active: false
   },
 
   // Clock models
   {
     parameter: "clock.rate",
     obj: new FixedValuePrior("clock.rate"),
-    description: "substitution rate"
+    description: "substitution rate",
+    active: true
   },
   {
     parameter: "ucld.mean",
     obj: new FixedValuePrior("ucld.mean"),
-    description:  "uncorrelated lognormal relaxed clock mean"
+    description:  "uncorrelated lognormal relaxed clock mean",
+    active: true
   },
   {
     parameter: "ucgd.mean",
     obj: new FixedValuePrior("ucgd.mean"),
-    description: "uncorrelated gamma relaxed clock mean"
+    description: "uncorrelated gamma relaxed clock mean",
+    active: true
   },
   {
     parameter: "uced.mean",
     obj: new FixedValuePrior("uced.mean"),
-    description: "uncorrelated exponential relaxed clock mean"
+    description: "uncorrelated exponential relaxed clock mean",
+    active: true
   },
   {
     parameter: "ucld.stdev",
     obj: new ExponentialPrior(idref="ucld.stdev", initial=0.3333333, mean=0.333333, offset=0),
-    description: "uncorrelated lognormal relaxed clock stdev"
+    description: "uncorrelated lognormal relaxed clock stdev",
+    active: true
   },
   {
     parameter: "ucgd.shape",
     obj: new ExponentialPrior(initial=0.3333333, mean=0.333333, offset=0),
-    description: "uncorrelated gamma relaxed clock shape"
+    description: "uncorrelated gamma relaxed clock shape",
+    active: true
   },
   {
     parameter: "rateChanges",
     obj: new PoissonPrior("rateChanges"),
-    description: "number of random local clocks"
+    description: "number of random local clocks",
+    active: false
   },
   {
     parameter: "localClock.relativeRates",
     obj: new GammaPrior('localClock.relativeRates'),
-    description: "random local clock relative rates"
+    description: "random local clock relative rates",
+    active: false
   },
 
   // Tree models
   {
     parameter: "treeModel.rootHeight",
     obj: new DefaultPrior('treeModel.rootHeight'),
-    description: "root height of the tree"
+    description: "root height of the tree",
+    active: true
   },
   {
     parameter: "constant.popSize",
     obj: new InversePrior('constant.popSize'),
-    description: "coalescent population size parameter"
+    description: "coalescent population size parameter",
+    active: true
   },
   {
     parameter: "skyline.popSize",
     obj: new UniformPrior(idref='skyline.popSize', initial=1, lower=0, upper=1E100),
-    description: "Bayesian Skyline population sizes"
+    description: "Bayesian Skyline population sizes",
+    active: true
   }
 ];
 
-
-function getPriorValues() {
-  var rows = [],
-      prior_parameters = [];
-
-  // Sites Tab
-  let objIndex,
-      site_model = $("#select-submodel").val();
-
-
-  if (site_model !== "JC") {
-    switch($("#select-basefreq").val()) {
-      case "Empirical":
-      case "Equal":
-        break;
-      case "Estimated":
-        prior_parameters.push("frequencies");
-        break;
-    }
-  }
-
-  // Clock Tab
-  if (site_model !== "uncorrelated") {
-    prior_parameters.push("clock.rate");
-  }
-
-  switch($("#select-clock").val()) {
-    case "uncorrelated":
-      switch($("#select-relaxed-dist").val()) {
-        case "lognormal":
-          prior_parameters.push("ucld.mean");
-          prior_parameters.push("ucld.stdev");
-          break;
-      }
-      break;
-  }
-
-  // Trees Tab
-  prior_parameters.push("treeModel.rootHeight");
-
-  let tree_model = $("#select-treeModel").val();
-  if (tree_model !== "skyline") {
-    prior_parameters.push(tree_model + ".popSize");
-  }
-  else
-    prior_parameters.push("skyline.popSize");
-
-  // TODO: replace with d3
-  prior_parameters.forEach( function(param) {
-    objIndex = priors.findIndex(obj => obj.parameter === param);
-    let [lower, upper] = priors[objIndex].obj.bound;
-    let curr_row = [
-      priors[objIndex].parameter,
-      priors[objIndex].obj.str(),
-      (lower !== "n/a") ? (`[${lower}, ${upper===Infinity ? "∞" : upper}]`) : "n/a",
-      priors[objIndex].description
-    ];
-    rows.push(curr_row);
-  });
-
-  return rows;
-}
