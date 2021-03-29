@@ -72,6 +72,29 @@ function update_log_settings(html_collection, idref) {
   }
 }
 
+function update_tree_prior(default_tree_prior) {
+  let param = default_tree_prior.getElementsByTagName("parameter")[0];
+
+  // Constant size or Bayesian Skyline
+  if (priors.filter(x=>x.parameter==="skyline.popSize")[0].active) {
+    default_tree_prior.setAttribute("id", "initialDemo");
+    param.setAttribute("value", "100.0");
+    param.setAttribute("id", "initialDemo.popSize");
+    if (param.hasAttribute("lower")) {
+      param.removeAttribute("lower");
+    }
+  }
+  else {
+    default_tree_prior.setAttribute("id", "constant");
+    var val = priors.filter(x=>x.parameter==="constant.popSize")[0].obj.initial;
+    param.setAttribute("value", val.toFixed(1).toString());
+    param.setAttribute("id", "constant.popSize");
+    if (!param.hasAttribute("lower")) {
+      param.setAttribute("lower", "0.0");
+    }
+  }
+}
+
 function update_prior_xml(html_collection, idref) {
   let el = filterHTMLCollectionByChild(html_collection, "idref", idref),
       this_prior = priors.filter(x=>x.parameter===idref)[0];
@@ -248,6 +271,9 @@ function export_xml() {
     seq.appendChild(seq_taxon);
     aln.appendChild(seq);
   }
+
+  let default_tree_prior = beast.getElementsByTagName("constantSize")[0];
+  update_tree_prior(default_tree_prior);
 
   // replace substitution model
   let site_model = generate_site_model(),
