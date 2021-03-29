@@ -139,8 +139,30 @@ function daysIntoYear(date){
 }
 
 
-$( function() {
+function loadPriors(prior){
+  //Takes prior object, and modifies form to show fields that can be changed
+  $('#prior_form_description').html(prior.Description) 
+  $('#prior_form_Parameter').html('Modify ' + prior.Parameter + ' below')
+  if (prior.Bound == 'n/a'){
+   $('#prior_form_lower_bound').attr('disabled', 'disabled')
+   $('#prior_form_upper_bound').attr('disabled', 'disabled')
+   $('#prior_form_bound_title').html('Bound: n/a')
+  }
+  else{
+   $('#prior_form_lower_bound').removeAttr('disabled')
+   $('#prior_form_upper_bound').removeAttr('disabled')
+   $('#prior_form_bound_title').html('Bound:')
+   parsed_bounds = prior.Bound.replace(/[\[\] ']+/g,'').split(',')
+   $('#prior_form_lower_bound').val(parsed_bounds[0])
+   $('#prior_form_upper_bound').val(parsed_bounds[1])
+  }
 
+
+}
+
+$( function() {
+  /* Code for parsing date form
+  */
   function parseDates(){
     //:TODO: Add 'just by its order date processing algorithm'
     if ($('#parser_order_prefix').is(":checked")){
@@ -197,8 +219,7 @@ $( function() {
 
   var dialog, form,
 
-
-  dialog = $( "#dialog-form" ).dialog({
+  dialog = $( "#parse-dates-form" ).dialog({
     autoOpen: false,
     height: 400,
     width: 400,
@@ -216,7 +237,6 @@ $( function() {
 
   form = dialog.find( "form" ).on( "submit", function( event ) {
     event.preventDefault();
-    addUser();
   });
 
   $( "#Parser" ).button().on( "click", function() {
@@ -245,6 +265,9 @@ $( function() {
         .enter()
         .append("tr")
         .on("click", function(d) {
+          prior_dialog.dialog("open")
+          loadPriors(d)
+          prior = d
           // TODO: spawn modal window to change prior hyperparameters
           console.log(d);
         })
@@ -266,3 +289,42 @@ $( function() {
 
 } );
 
+$( function() {
+  /* Code for changing prior
+  */
+ 
+  function changePriors(prior){
+    
+    prior_dialog.dialog( "close" );
+  }
+
+
+  prior_dialog = $( "#change-priors-form" ).dialog({
+    autoOpen: false,
+    height: 400,
+    width: 400,
+    modal: true,
+    buttons: {
+      "ok": changePriors,
+      Cancel: function() {
+        prior_dialog.dialog( "close" );
+      }
+    },
+    close: function() {
+      form[ 0 ].reset();
+    }
+  });
+
+  form = prior_dialog.find( "form" ).on( "submit", function( event ) {
+    event.preventDefault();
+  });
+
+  /*
+  $( "#Parser" ).button().on( "click", function() {
+    prior_dialog.dialog( "open" );
+  });
+  */
+
+
+
+} );
