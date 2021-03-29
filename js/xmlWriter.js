@@ -42,6 +42,12 @@ function filterHTMLCollection(collection, attr, value) {
       .filter(x=>x.getAttribute(attr) === value);
 }
 
+function filterHTMLCollectionByChild(collection, attr, value) {
+  return Array.from(collection.children)
+      .filter(x => x.children.length > 0)
+      .filter(x => x.children[0].getAttribute(attr) === value);
+}
+
 
 /**
  * Convenience function - modify contents of <log> (fileLog) based on
@@ -66,6 +72,28 @@ function update_log_settings(html_collection, idref) {
   }
 }
 
+function update_prior_xml(html_collection, idref) {
+  let el = filterHTMLCollectionByChild(html_collection, "idref", idref),
+      this_prior = priors.filter(x=>x.parameter===idref)[0];
+
+  if (this_prior.active) {
+    if (el.length === 0) {
+      // restore element
+      let nel = this_prior.obj.element();
+      if (nel !== null) {
+        html_collection.appendChild(nel);
+      }
+    } // otherwise no action necessary
+  }
+  else {
+    // prior is not active
+    if (el.length > 0) {
+      // delete element
+      html_collection.removeChild(el[0]);
+    } // otherwise no action necessary
+  }
+}
+
 
 function update_mcmc(default_mcmc) {
   let prior = default_mcmc.getElementsByTagName("prior")[0],
@@ -80,6 +108,9 @@ function update_mcmc(default_mcmc) {
     default_mcmc.removeAttribute("operatorAnalysis");
   }
 
+  // modify <prior> tag contents
+  priors.map(x => update_prior_xml(prior, x.parameter));
+
   // screen log settings
   logs[0].setAttribute("logEvery", $("#echo_to_screen").val());
 
@@ -89,43 +120,56 @@ function update_mcmc(default_mcmc) {
 
   priors.map(x => update_log_settings(logs[1], x.parameter));
 
-  // strictClockBranchRates or discretizedBranchRates?
-  let el1 = filterHTMLCollection(logs[1], "idref", "strictClockBranchRates"),
-      el2 = filterHTMLCollection(logs[1], "idref", "discretizedBranchRates"),
-      lt_trait = treelog.getElementsByTagName("trait")[0],
-      lt_el1 = filterHTMLCollection(lt_trait, "idref", "strictClockBranchRates"),
-      lt_el2 = filterHTMLCollection(lt_trait, "idref", "discretizedBranchRates");
 
-  let dbr = document.createElement("discretizedBranchRates")
-          .setAttribute("idref", "branchRates"),
-      scbr = document.createElement("strictClockBranchRates")
-          .setAttribute("idref", "branchRates");
+  // strictClockBranchRates or discretizedBranchRates?
+  let el = filterHTMLCollection(logs[1], "idref", "branchRates"),
+      lt_trait = treelog.getElementsByTagName("trait")[0],
+      lt_el = filterHTMLCollection(lt_trait, "idref", "branchRates"),
+      pr_el = filterHTMLCollection(prior, "idref", "branchRates");
+
+  if (el.length === 0 || lt_el.length === 0) {
+    alert("Failed to match element with idref 'branchRates' in <log>.");
+  }
 
   if ($("#select-clock").val() === "strict") {
-    if (el1.length === 0) logs[1].appendChild(scbr);
-    if (el2.length > 0) logs[1].removeChild(el2[0]);
-    // do same for tree log
-    if (lt_el1.length === 0) lt_trait.appendChild(scbr);
-    if (lt_el2.length > 0) lt_trait.removeChild(lt_el2[0]);
+    let scbr = document.createElementNS("", "strictClockBranchRates");
+    scbr.setAttributeNS("", "idref", "branchRates");
+
+    if (el[0].tagName === "discretizedBranchRates") {
+      logs[1].removeChild(el[0]);
+      logs[1].appendChild(scbr);
+    }
+    if (lt_el[0].tagName === "discretizedBranchRates") {
+      lt_trait.removeChild(lt_el[0]);
+      lt_trait.appendChild(scbr);
+    }
+    if (pr_el[0].tagName === "discretizedBranchRates") {
+      prior.removeChild(pr_el[0]);
+      prior.appendChild(scbr);
+    }
   }
   else {
     // uncorrelated relaxed clock
-    if (el1.length > 0) logs[1].removeChild(el1[[0]]);
-    if (el2.length === 0) logs[1].appendChild(dbr);
+    let dbr = document.createElementNS("", "discretizedBranchRates");
+    dbr.setAttributeNS("", "idref", "branchRates");
 
-    if (lt_el1.length > 0) lt_trait.removeChild(lt_el1[[0]]);
-    if (lt_el2.length === 0) lt_trait.appendChild(dbr);
+    if (el[0].tagName === "strictClockBranchRates") {
+      logs[1].removeChild(el[0]);
+      logs[1].appendChild(dbr);
+    }
+    if (lt_el[0].tagName === "strictClockBranchRates") {
+      lt_trait.removeChild(lt_el[0]);
+      lt_trait.appendChild(dbr);
+    }
+    if (pr_el[0].tagName === "strictClockBranchRates") {
+      prior.removeChild(pr_el[0]);
+      prior.appendChild(dbr);
+    }
   }
 
   // === tree log settings ====================
   treelog.setAttribute("logEvery", $("#log_parameters_every").val());
   treelog.setAttribute("fileName", $("#trees_file_name").val());
-
-
-  dbr = null;  // is it necessary to clean up after ourselves?
-  scbr = null;
-
-  return default_mcmc;
 }
 
 
@@ -184,9 +228,9 @@ function export_xml() {
   beast.replaceChild(site_model, default_model);
 
   // update MCMC settings - FIXME: replaceChild might be unnecessary
-  let default_mcmc = beast.getElementsByTagName("mcmc")[0],
-      user_mcmc = update_mcmc(default_mcmc);
-  beast.replaceChild(user_mcmc, default_mcmc);
+  let default_mcmc = beast.getElementsByTagName("mcmc")[0];
+  update_mcmc(default_mcmc);
+  //beast.replaceChild(user_mcmc, default_mcmc);
 
   // serialize XML to write to file
   let serializer = new XMLSerializer();
