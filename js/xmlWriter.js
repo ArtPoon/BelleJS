@@ -518,8 +518,35 @@ function update_mcmc(beast) {
   // modify <prior> tag contents
   priors.map(x => update_prior_xml(prior, x.parameter));
 
-  // screen log settings
+  // ==== screen log settings ========
   logs[0].setAttribute("logEvery", $("#echo_to_screen").val());
+
+  // special case: if using UCLN with dated tips, report ucld.mean
+  let ucld_mean = priors.filter(x => x.parameter==="ucld.mean"),
+      active = ucld_mean.filter(x => x.active);
+
+  if (active.length > 0) {
+    let els = filterHTMLCollectionByChild(logs[0], "idref", "ucld.mean");
+    if (active[0].obj.constructor.name === "CTMCScalePrior") {
+      // add ucld.mean to screen log if not present
+      if (els.length === 0) {
+        let column = document.createElement("column"),
+            par = document.createElement("parameter");
+        column.setAttribute("label", "ucld.mean");
+        column.setAttribute("sf", "6");
+        column.setAttribute("width", "12");
+        par.setAttribute("idref", "ucld.mean");
+        column.appendChild(par);
+        logs[0].appendChild(column);
+      }
+    }
+    else {
+      // remove ucld.mean from screen log if present
+      if (els.length > 0) {
+        logs[0].removeChild(els[0]);
+      }
+    }
+  }
 
   // === file log settings ======================
   logs[1].setAttribute("logEvery", $("#log_parameters_every").val());
