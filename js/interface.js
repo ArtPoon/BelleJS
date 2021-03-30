@@ -293,8 +293,17 @@ $( function() {
   /* Code for changing prior
   */
  
-  function changePriors(prior){
-    
+  function changePriors(){
+    //Update bound information
+    bound = Array($('#prior_form_lower_bound').val(), $('#prior_form_upper_bound').val())
+    priors.filter(x=> x.parameter===prior.Parameter)[0].obj.bound = bound
+
+    //update Table
+    changeSubModel();
+    changeBaseFreq();
+    changeClockType();
+    changeTreePrior();
+    $('#priors-tab').click();
     prior_dialog.dialog( "close" );
   }
 
@@ -319,11 +328,6 @@ $( function() {
     event.preventDefault();
   });
 
-  /*
-  $( "#Parser" ).button().on( "click", function() {
-    prior_dialog.dialog( "open" );
-  });
-  */
 
 
 
