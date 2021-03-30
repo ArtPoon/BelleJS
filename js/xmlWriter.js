@@ -82,8 +82,10 @@ function updateStartingTree(beast) {
       coalescentTree = treeModel.getElementsByTagName("coalescentTree"),
       upgmaTree = treeModel.getElementsByTagName("upgmaTree"),
       coalescentSimulator = beast.getElementsByTagName("coalescentSimulator"),
-      rescaledTree = beast.getElementsByTagName("rescaledTree");
-      id = skyline.active ? "initialDemo" : "constant";
+      rescaledTree = beast.getElementsByTagName("rescaledTree"),
+      id = skyline.active ? "initialDemo" : "constant",
+      coalescentLikelihood = beast.getElementsByTagName("coalescentLikelihood"),
+      generalizedSkyLineLikelihood = beast.getElementsByTagName("generalizedSkyLineLikelihood");
 
   // Constant size or Bayesian Skyline
   startingTree.setAttribute("id", id);
@@ -148,6 +150,69 @@ function updateStartingTree(beast) {
       let treeModel_coalescentTree = document.createElementNS("", "coalescentTree");
       treeModel_coalescentTree.setAttribute("idref", "startingTree");
       treeModel.replaceChild(treeModel_coalescentTree, upgmaTree[0]);
+    }
+  }
+
+  let new_populationTree = document.createElementNS("", "populationTree"),
+      new_treeModel = document.createElementNS("", "treeModel");
+
+  new_treeModel.setAttribute("idref", "treeModel");
+  new_populationTree.appendChild(new_treeModel);
+  
+  if (constant.active) {
+    // Generate a Coalescent likelihood
+    if (generalizedSkyLineLikelihood.length > 0) {
+      beast.removeChild(beast.getElementsByTagName("exponentialMarkovLikelihood")[0]);
+
+      let new_coalescentLikelihood = document.createElementNS("", "coalescentLikelihood"),
+          new_model = document.createElement("taxa"),
+          new_constantSize = document.createElementNS("", "constantSize");
+
+      new_constantSize.setAttribute("idref", id);
+      new_model.appendChild(new_constantSize);
+      new_coalescentLikelihood.appendChild(new_model);
+      new_coalescentLikelihood.appendChild(new_populationTree);
+      beast.replaceChild(new_coalescentLikelihood, generalizedSkyLineLikelihood[0]);
+    }
+  }
+  else {
+    var num_groups = parseInt($("#skygridNumParam").val());
+
+    // Generate a generalizedSkyLineLikelihood for Bayesian Skyline
+    if (coalescentLikelihood.length > 0 && coalescentLikelihood[0].parentElement.nodeName === "beast") {
+      let generalizedSkyline= xmlReader.parseFromString(`
+<generalizedSkyLineLikelihood id="skyline" linear="true">
+  <populationSizes>
+    <parameter id="skyline.popSize" dimension="${$("#select-skyline").val() === "skylinePWConst" ? num_groups.toString() : (num_groups + 1).toString()}" value="${skyline.obj.initial.toFixed(1).toString()}" lower="${skyline.obj.bound[0].toFixed(1).toString()}"/>
+  </populationSizes>
+  <groupSizes>
+    <parameter id="skyline.groupSize" dimension="${num_groups}"/>
+  </groupSizes>
+  <populationTree>
+    <treeModel idref="treeModel"/>
+  </populationTree>
+</generalizedSkyLineLikelihood>
+              `, 'text/xml').children[0],
+      exponentialMarkovLikelihood = xmlReader.parseFromString(`
+<exponentialMarkovLikelihood id="eml1" jeffreys="true">
+  <chainParameter>
+    <parameter idref="skyline.popSize"/>
+  </chainParameter>
+</exponentialMarkovLikelihood>
+              `, 'text/xml').children[0];
+
+
+      beast.replaceChild(exponentialMarkovLikelihood, coalescentLikelihood[0]);
+      beast.insertBefore(generalizedSkyline, beast.getElementsByTagName("exponentialMarkovLikelihood")[0]);
+
+    }
+    else {
+      let popSiz_param = generalizedSkyLineLikelihood[0].getElementsByTagName("populationSizes")[0].getElementsByTagName("parameter")[0],
+          groupSiz_param = generalizedSkyLineLikelihood[0].getElementsByTagName("groupSizes")[0].getElementsByTagName("parameter")[0];
+      popSiz_param.setAttribute("dimension", $("#select-skyline").val() === "skylinePWConst" ? num_groups.toString() : (num_groups + 1).toString());
+      popSiz_param.setAttribute("value", skyline.obj.initial.toFixed(1).toString());
+      popSiz_param.setAttribute("lower", skyline.obj.bound[0].toFixed(1).toString());
+      groupSiz_param.setAttribute("dimension", num_groups);
     }
   }
 }
