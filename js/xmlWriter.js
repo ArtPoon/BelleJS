@@ -6,7 +6,7 @@ var xmlReader = new DOMParser();
  */
 function generate_site_model() {
   let frequencies = document.createElement("frequencies"),
-      freq_model = document.createElement("frequencyModel"),
+      freq_model = document.createElementNS("", "frequencyModel"),
       aln = document.createElement("alignment"),
       fm_freq = document.createElement("frequencies"),
       fm_param = document.createElement("parameter"),
@@ -37,6 +37,7 @@ function generate_site_model() {
 
   let kappa = document.createElement("kappa"),
       kpar = document.createElement("parameter");
+
   kpar.setAttribute("id", "kappa");
   kpar.setAttribute("value", model_name==="JC"?"1.0":"2.0");
   kpar.setAttribute("lower", "0.0")
@@ -44,7 +45,7 @@ function generate_site_model() {
 
   if (model_name === 'JC' || model_name === 'HKY') {
     site_model = document.createElementNS("", "HKYModel");
-    site_model.setAttribute("id", "hky");
+    site_model.setAttribute("id", model_name==='HKY' ? "hky" : "jc");
     site_model.appendChild(frequencies);
     site_model.appendChild(kappa);
   }
@@ -518,8 +519,45 @@ function update_mcmc(beast) {
   // modify <prior> tag contents
   priors.map(x => update_prior_xml(prior, x.parameter));
 
+
   // ==== screen log settings ========
   logs[0].setAttribute("logEvery", $("#echo_to_screen").val());
+
+  // if dated tips, report `age(root)`; otherwise `rootHeight`
+  let els = filterHTMLCollection(logs[0], "label", "rootHeight");
+
+  if (els.length === 0) {
+    els = filterHTMLCollection(logs[0], "label", "age(root)");
+    if (els.length === 0) {
+      alert("ERROR: failed to retrieve rootHeight or age(root) column from screen log settings")
+    }
+    else {
+      if (!$("#use_tip_dates")[0].checked) {
+        // age(root) -> rootHeight
+        let par = document.createElement("parameter");
+        par.setAttribute("idref", "treeModel.rootHeight");
+        els[0].setAttribute("label", "rootHeight");
+        els[0].replaceChild(par, els[0].children[0]);
+
+        // assume file log is affected the same way
+        let fels = filterHTMLCollection(logs[1], "idref", "age(root)");
+        logs[1].replaceChild(par, fels[0]);
+      }
+    }
+  }
+  else {
+    if ($("#use_tip_dates")[0].checked) {
+      // rootHeight -> age(root)
+      let par = document.createElement("tmrcaStatistic");
+      par.setAttribute("idref", "age(root)");
+      els[0].setAttribute("label", "age(root)")
+      els[0].replaceChild(par, els[0].children[0]);
+
+      // update file log
+      let fels = filterHTMLCollection(logs[1], "idref", "treeModel.rootHeight");
+      logs[1].replaceChild(par, fels[0]);
+    }
+  }
 
   // special case: if using UCLN with dated tips, report ucld.mean
   let ucld_mean = priors.filter(x => x.parameter==="ucld.mean"),
@@ -527,6 +565,7 @@ function update_mcmc(beast) {
 
   if (active.length > 0) {
     let els = filterHTMLCollectionByChild(logs[0], "idref", "ucld.mean");
+
     if (active[0].obj.constructor.name === "CTMCScalePrior") {
       // add ucld.mean to screen log if not present
       if (els.length === 0) {
@@ -554,6 +593,7 @@ function update_mcmc(beast) {
 
   priors.map(x => update_log_settings(logs[1], x.parameter));
 
+
   // === tree log settings ====================
   treelog.setAttribute("logEvery", $("#log_parameters_every").val());
   treelog.setAttribute("fileName", $("#trees_file_name").val());
@@ -561,15 +601,11 @@ function update_mcmc(beast) {
 
 
 /**
- * export_xml
- * Bind event handler to "Generate BEAST XML" button
- * Map values of input elements to populate XML template, serialize
- * and write the result to a file.
+ * Write taxa and sequence information into XML.
+ * @param beast
  */
-function export_xml() {
-  // transfer sequence alignment
-  let beast = beast_xml.children[0],
-      taxa = beast.getElementsByTagName('taxa').taxa,  // HTMLCollection
+function update_alignment(beast) {
+  let taxa = beast.getElementsByTagName('taxa').taxa,  // HTMLCollection
       aln = beast.getElementsByTagName('alignment').alignment;  // HTMLCollection
 
   // append user taxa and sequences
@@ -593,7 +629,6 @@ function export_xml() {
 
     taxa.appendChild(taxon);
 
-
     let seq = document.createElement('sequence'),
         seq_taxon = document.createElement('taxon');
     seq_taxon.setAttribute("idref", alignment[i]['header']);
@@ -608,13 +643,42 @@ function export_xml() {
     seq.appendChild(seq_taxon);
     aln.appendChild(seq);
   }
+}
 
+/**
+ * export_xml
+ * Bind event handler to "Generate BEAST XML" button
+ * Map values of input elements to populate XML template, serialize
+ * and write the result to a file.
+ */
+function export_xml() {
+  // transfer sequence alignment
+  let beast = beast_xml.children[0];
+
+  update_alignment(beast);
   updateStartingTree(beast);
 
   // replace substitution model
-  let site_model = generate_site_model(),
+  let sub_model = generate_site_model(),
       default_model = beast.getElementsByTagName("HKYModel")[0];
-  beast.replaceChild(site_model, default_model);
+  beast.replaceChild(sub_model, default_model);
+
+  let site_model = beast.getElementsByTagName("siteModel")[0];
+  site_model.children[0].children[0]
+      .setAttribute("idref", $("#select-submodel").val()==="HKY" ? "hky" : "jc");
+
+  // is this a dated tip analysis?  if not, omit tmrcaStatistic
+  let tmrca = beast.getElementsByTagName("tmrcaStatistic");
+  if ($("#use_tip_dates")[0].checked && tmrca.length === 0) {
+    let el = document.createElement("tmrcaStatistic"),
+        tm = document.createElement("treeModel");
+
+    el.setAttribute("id", "age(root)");
+    el.setAttribute("absolute", "true");
+    tm.setAttribute("idref", "treeModel");
+    el.appendChild(tm);
+    beast.appendChild(el);
+  }
 
   // update operators
   update_operators(beast);
