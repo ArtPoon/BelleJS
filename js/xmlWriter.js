@@ -268,7 +268,11 @@ function update_prior_xml(html_collection, idref) {
  * @param beast:  parent Element
  */
 function update_operators(beast) {
-  let operators = beast.getElementsByTagName("operators")[0];
+  let operators = beast.getElementsByTagName("operators")[0],
+      ucld_mean = priors.filter(x => x.parameter==="ucld.mean");
+
+  // deal with CTMC setting
+
 
   for (let this_prior of priors) {
     let el = filterHTMLCollectionByChild(operators, "idref", this_prior.parameter);

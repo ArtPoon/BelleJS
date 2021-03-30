@@ -308,6 +308,39 @@ function PoissonPrior(idref) {
 }
 
 
+function CTMCScalePrior(idref, initial) {
+  // CTMC Rate Reference
+  this.idref = idref;
+  this.initial = initial;
+  this.bound = [0, Infinity];
+  this.str = function() { return `Approx. Reference Prior, initial=${this.initial}`};
+
+  // TODO: this has to replace scaleOperator for allInternalNodeHeights
+  this.operator = function() {
+    return xmlReader.parseFromString(`<scaleOperator scaleFactor="0.75" weight="3">
+        <parameter idref="ucld.mean"/>
+</scaleOperator>
+<upDownOperator scaleFactor="0.75" weight="3">
+  <up>
+    <parameter idref="treeModel.allInternalNodeHeights"/>
+  </up>
+  <down>
+    <parameter idref="ucld.mean"/>
+  </down>
+</upDownOperator>`, 'text/xml').children[0];
+  };
+
+  this.element = function() {
+    return xmlReader.parseFromString(`<ctmcScalePrior>
+  <ctmcScale>
+    <parameter idref="ucld.mean"/>
+  </ctmcScale>
+  <treeModel idref="treeModel"/>
+</ctmcScalePrior>`, 'text/xml').children[0];
+  };
+}
+
+
 
 // Listing of all possible prior distributions associated with various model settings.
 priors = [
@@ -367,6 +400,12 @@ priors = [
     obj: new FixedValuePrior("ucld.mean"),
     description:  "uncorrelated lognormal relaxed clock mean",
     active: true
+  },
+  {
+    parameter: "ucld.mean",
+    obj: new CTMCScalePrior("ucld.mean"),
+    description: "uncorrelated lognormal relaxed clock mean",
+    active: false
   },
   {
     parameter: "ucgd.mean",

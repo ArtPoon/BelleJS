@@ -35,7 +35,9 @@ function changeClockType() {
       relaxed = priors.filter(x => x.parameter.startsWith('uc')),
       relaxed_dist = $("#select-relaxed-dist")[0];
 
+  // turn off everything related to relaxed clock models
   relaxed.map(x => x.active = false);
+
   if ($("#select-clock").val() === "strict") {
     clock_rate.active = true;
     relaxed_dist.disabled = true;
@@ -46,8 +48,13 @@ function changeClockType() {
     clock_rate.active = false;
     switch (relaxed_dist.value) {
       case "lognormal":
-        priors.filter(x => x.parameter.startsWith('ucld'))
-            .map(x => x.active = true);
+        let ucld_mean = priors.filter(x => x.parameter === "ucld.mean"),
+            use_tip_dates = $("#use_tip_dates")[0].checked;
+        ucld_mean.filter(x => x.obj.constructor.name === "FixedValuePrior")[0].active = !use_tip_dates;
+        ucld_mean.filter(x => x.obj.constructor.name === "CTMCScalePrior")[0].active = use_tip_dates;
+
+        let ucld_var = priors.filter(x => x.parameter === "ucld.stdev")[0];
+        ucld_var.active = true;
         break;
     }
   }
