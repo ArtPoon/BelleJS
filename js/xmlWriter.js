@@ -380,13 +380,13 @@ function updateBranchRates(beast) {
   if (clock_option === 'strict') {
     if (tdl_el[0].tagName === 'discretizedBranchRates') {
       treeDataLikelihood.removeChild(tdl_el[0]);
-      treeDataLikelihood.appendChild(scbr);
+      treeDataLikelihood.appendChild(scbr.cloneNode());
     }
   }
   else {
     if (tdl_el[0].tagName === "strictClockBranchRates") {
       treeDataLikelihood.removeChild(tdl_el[0]);
-      treeDataLikelihood.appendChild(dbr);
+      treeDataLikelihood.appendChild(dbr.cloneNode());
     }
   }
 
@@ -408,30 +408,30 @@ function updateBranchRates(beast) {
   if (clock_option === "strict") {
     if (el[0].tagName === "discretizedBranchRates") {
       logs[1].removeChild(el[0]);
-      logs[1].appendChild(scbr);
+      logs[1].appendChild(scbr.cloneNode());
     }
     if (lt_el[0].tagName === "discretizedBranchRates") {
       lt_trait.removeChild(lt_el[0]);
-      lt_trait.appendChild(scbr);
+      lt_trait.appendChild(scbr.cloneNode());
     }
     if (pr_el[0].tagName === "discretizedBranchRates") {
       prior.removeChild(pr_el[0]);
-      prior.appendChild(scbr);
+      prior.appendChild(scbr.cloneNode());
     }
   }
   else {
     // uncorrelated relaxed clock
     if (el[0].tagName === "strictClockBranchRates") {
       logs[1].removeChild(el[0]);
-      logs[1].appendChild(dbr);
+      logs[1].appendChild(dbr.cloneNode());
     }
     if (lt_el[0].tagName === "strictClockBranchRates") {
       lt_trait.removeChild(lt_el[0]);
-      lt_trait.appendChild(dbr);
+      lt_trait.appendChild(dbr.cloneNode());
     }
     if (pr_el[0].tagName === "strictClockBranchRates") {
       prior.removeChild(pr_el[0]);
-      prior.appendChild(dbr);
+      prior.appendChild(dbr.cloneNode());
     }
   }
 }
