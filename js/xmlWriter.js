@@ -269,24 +269,52 @@ function update_prior_xml(html_collection, idref) {
  */
 function update_operators(beast) {
   let operators = beast.getElementsByTagName("operators")[0],
-      ucld_mean = priors.filter(x => x.parameter==="ucld.mean");
+      ucld_mean = priors.filter(x => x.parameter==="ucld.mean"),
+      active = ucld_mean.filter(x => x.active);
 
-  // deal with CTMC setting
-
+  if (active.length > 0) {
+    if (active[0].obj.constructor.name === "CTMCScalePrior") {
+      // need to remove default operator for treeModel.allInternalNodeHeights
+      let op = Array.from(operators.children).filter(x => x.hasAttribute("ignoreBounds"));
+      if (op.length === 0)
+        alert("Failed to locate default treeModel.allInternalNodeHeights scaleOperator");
+      else
+        operators.removeChild(op[0]);
+    }
+    else {
+      // fixed prior, restore default operator
+      let sOp = document.createElementNS("", "scaleOperator"),
+          par = document.createElement("parameter");
+      sOp.setAttributeNS("", "scaleFactor", "0.75");
+      sOp.setAttributeNS("", "scaleAll", "true");
+      sOp.setAttributeNS("", "ignoreBounds", "true");
+      sOp.setAttribute("weight", "3");
+      par.setAttribute("idref", "treeModel.allInternalNodeHeights");
+      sOp.appendChild(par);
+      operators.appendChild(sOp);
+    }
+  }
 
   for (let this_prior of priors) {
     let el = filterHTMLCollectionByChild(operators, "idref", this_prior.parameter);
     if (this_prior.active) {
       if (el.length === 0) {
-        let nel = this_prior.obj.operator();
-        if (nel !== null) {
-          operators.appendChild(nel);
+        // operators not loaded for this prior
+        let ops = this_prior.obj.operator();
+        // FIXME: need to handle situation where prior has multiple operators
+        for (let op of ops) {
+          if (op !== null) {
+            operators.appendChild(op);
+          }
         }
       }
     }
     else {
       if (el.length > 0) {
-        operators.removeChild(el[0]);
+        // need to unload operators for this prior
+        for (let op of el) {
+          operators.removeChild(op);
+        }
       }
     }
   }

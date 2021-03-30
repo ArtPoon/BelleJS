@@ -127,6 +127,8 @@ function Unlock_tipOpts(){
   $("#dates_as_direction").attr("disabled", unlock);
   //$("#specify_origin_date").attr("disabled", unlock);
   //$("#origin_date").attr("disabled", unlock);
+
+  changeClockType();
 }
 
 

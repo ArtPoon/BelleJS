@@ -30,7 +30,7 @@ function LogNormalPrior(idref, initial=1.0, mu=1.0, sigma=1.0, offset=0.0, lower
 
     par.setAttribute("idref", this.idref);
     op.appendChild(par);
-    return op;
+    return [op];
   }
 
   this.element = function() {
@@ -66,7 +66,7 @@ function NormalPrior(idref, initial=0.0, mean=0.0, stdev=1.0, lower=-Infinity, u
     op.setAttribute("weight", "1");
     par.setAttribute("idref", this.idref);
     op.appendChild(par);
-    return op;
+    return [op];
   }
 
   this.element = function() {
@@ -105,7 +105,7 @@ function InversePrior(idref, initial=1.0, lower=0, upper=Infinity) {
     op.setAttribute("weight", "3");
     par.setAttribute("idref", this.idref);
     op.appendChild(par);
-    return op;
+    return [op];
   }
 }
 
@@ -129,7 +129,7 @@ function GammaPrior(idref, initial=2.0, shape=0.5, scale=2, offset=0.0,
     op.setAttribute("weight", "1");
     par.setAttribute("idref", this.idref);
     op.appendChild(par);
-    return op;
+    return [op];
   }
 
   this.element = function() {
@@ -163,7 +163,7 @@ function LaplacePrior(idref, initial=0.1, mean=0.0, scale=1.0, lower=0,
     op.setAttribute("weight", "1");
     par.setAttribute("idref", this.idref);
     op.appendChild(par);
-    return op;
+    return [op];
   }
 
   this.element = function() {
@@ -183,7 +183,7 @@ function FixedValuePrior(idref, initial=1.0) {
   this.bound = ['n/a', ];
 
   this.str = function() { return `Fixed value, value=${this.initial}`; };
-  this.operator = function() { return null; }
+  this.operator = function() { return [null]; }
   this.element = function() { return null; }
 }
 
@@ -203,7 +203,7 @@ function UniformPrior(idref, initial=0.5, lower=0, upper=1) {
     op.setAttribute("weight", "1");
     par.setAttribute("idref", this.idref);
     op.appendChild(par);
-    return op;
+    return [op];
   }
 
   this.element = function() {
@@ -235,7 +235,7 @@ function ExponentialPrior(idref, initial=0.5, mean=0.5, offset=0,
     op.setAttribute("weight", "1");
     par.setAttribute("idref", this.idref);
     op.appendChild(par);
-    return op;
+    return [op];
   }
 
   this.element = function() {
@@ -276,7 +276,7 @@ function DirichletPrior(idref) {
     op.setAttribute("weight", "1");
     par.setAttribute("idref", this.idref);
     op.appendChild(par);
-    return op;
+    return [op];
   }
 }
 
@@ -294,12 +294,14 @@ function DefaultPrior(idref) {
     op.setAttribute("weight", "3");
     par.setAttribute("idref", this.idref);
     op.appendChild(par);
-    return op;
+    return [op];
   }
 
   this.element = function() { return null; };
 }
 
+
+// FIXME: this is incomplete
 function PoissonPrior(idref) {
   this.idref = idref;
   this.rate = 0.693147;  // BEAUti v.1.10.4 does not allow this to change
@@ -317,17 +319,29 @@ function CTMCScalePrior(idref, initial) {
 
   // TODO: this has to replace scaleOperator for allInternalNodeHeights
   this.operator = function() {
-    return xmlReader.parseFromString(`<scaleOperator scaleFactor="0.75" weight="3">
-        <parameter idref="ucld.mean"/>
-</scaleOperator>
-<upDownOperator scaleFactor="0.75" weight="3">
-  <up>
-    <parameter idref="treeModel.allInternalNodeHeights"/>
-  </up>
-  <down>
-    <parameter idref="ucld.mean"/>
-  </down>
-</upDownOperator>`, 'text/xml').children[0];
+    let sOp = document.createElementNS("", "scaleOperator"),
+        par1 = document.createElement("parameter"),
+        udOp = document.createElementNS("", "upDownOperator"),
+        up = document.createElement("up"),
+        par2 = document.createElement("parameter"),
+        down = document.createElement("down"),
+        par3 = document.createElement("parameter");
+
+    sOp.setAttributeNS("", "scaleFactor", "0.75");
+    sOp.setAttribute("weight", "3");
+    par1.setAttribute("idref", "ucld.mean");
+    sOp.appendChild(par1);
+
+    udOp.setAttribute("scaleFactor", "0.75");
+    udOp.setAttribute("weight", "3");
+    par2.setAttribute("idref", "treeModel.allInternalNodeHeights");
+    up.appendChild(par2);
+    par3.setAttribute("idref", "ucld.mean");
+    down.appendChild(par3);
+    udOp.appendChild(up);
+    udOp.appendChild(down);
+
+    return [sOp, udOp];
   };
 
   this.element = function() {
