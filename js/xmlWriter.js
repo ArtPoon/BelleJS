@@ -357,21 +357,49 @@ function updateBranchRates(beast) {
   }
 
   // ========= update <rateStatistic> ==========
-  let rateStatistic = beast.getElementsByTagName("rateStatistic")[0],
-      rs_el = filterHTMLCollection(rateStatistic, "idref", "branchRates");
+  let rateStatistic = beast.getElementsByTagName("rateStatistic"),
+      rs_el = filterHTMLCollection(rateStatistic[0], "idref", "branchRates");
   if (rs_el.length === 0)
     alert("Failed to locate branchRates element in rateStatistic");
 
   if (clock_option === 'strict') {
     if (rs_el[0].tagName === 'discretizedBranchRates') {
-      rateStatistic.removeChild(rs_el[0]);
-      rateStatistic.appendChild(scbr);
+      rateStatistic[0].removeChild(rs_el[0]);
+      rateStatistic[0].appendChild(scbr);
     }
+
+    if (rateStatistic.length > 1) {
+      if (rateStatistic[1].parentElement.nodeName === "beast") {
+        beast.removeChild(rateStatistic[1]);
+        beast.removeChild(beast.getElementsByTagName("rateCovarianceStatistic")[0]);
+      }
+    }
+
   }
   else {
     if (rs_el[0].tagName === 'strictClockBranchRates') {
-      rateStatistic.removeChild(rs_el[0]);
-      rateStatistic.appendChild(dbr);
+      rateStatistic[0].removeChild(rs_el[0]);
+      rateStatistic[0].appendChild(dbr);
+    }
+    
+    // Assume Lognormal Relaxed Distribution
+    if (beast.getElementsByTagName("rateCovarianceStatistic").length === 0) {
+      let covarianceStat = xmlReader.parseFromString(`
+<rateCovarianceStatistic id="covariance" name="covariance">
+  <treeModel idref="treeModel"/>
+  <discretizedBranchRates idref="branchRates"/>
+</rateCovarianceStatistic>`,
+                'text/xml').children[0],
+      coef_variation = xmlReader.parseFromString(`
+<rateStatistic id="coefficientOfVariation" name="coefficientOfVariation" mode="coefficientOfVariation" internal="true" external="true">
+  <treeModel idref="treeModel"/>
+  <discretizedBranchRates idref="branchRates"/>
+</rateStatistic>`,
+                'text/xml').children[0],
+      getHKY = beast.getElementsByTagName("HKYModel")[0];
+      
+      beast.insertBefore(covarianceStat, getHKY);
+      beast.insertBefore(coef_variation, beast.getElementsByTagName("rateCovarianceStatistic")[0])
     }
   }
 
