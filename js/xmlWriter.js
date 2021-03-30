@@ -7,15 +7,30 @@ var xmlReader = new DOMParser();
 function generate_site_model() {
   let frequencies = document.createElement("frequencies"),
       freq_model = document.createElement("frequencyModel"),
+      aln = document.createElement("alignment"),
       fm_freq = document.createElement("frequencies"),
       fm_param = document.createElement("parameter"),
       site_model,
-      model_name = $("#select-submodel").val();
+      model_name = $("#select-submodel").val(),
+      basefreq_option = $("#select-basefreq").val();
 
+  // <parameter>
   fm_param.setAttribute("id", "frequencies");
-  fm_param.setAttribute("value", "0.25 0.25 0.25 0.25");
 
+  if (basefreq_option === "Empirical") {
+    fm_param.setAttribute("dimension", "4");
+  } else {
+    // estimated or all-equal
+    fm_param.setAttribute("value", "0.25 0.25 0.25 0.25");
+  }
+
+  // <frequencies>
+  if (basefreq_option === "Empirical") {
+    aln.setAttribute("idref", "alignment");
+    fm_freq.appendChild(aln);
+  }
   fm_freq.appendChild(fm_param);
+
   freq_model.setAttributeNS("", "dataType", "nucleotide");
   freq_model.appendChild(fm_freq);
   frequencies.appendChild(freq_model);

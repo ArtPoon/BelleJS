@@ -23,6 +23,7 @@ function changeSubModel() {
 function changeBaseFreq() {
   let freq = priors.filter(x => x.parameter === 'frequencies')[0];
   if ($("#select-submodel").val() !== "JC") {
+    // turn of deltaExchange operator if Empirical or All equal
     freq.active = ($("#select-basefreq").val() === "Estimated");
   } else {
     freq.active = false;
