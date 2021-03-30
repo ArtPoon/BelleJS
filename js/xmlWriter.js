@@ -1,3 +1,5 @@
+var xmlReader = new DOMParser();
+
 /**
  * Create element to append to BEAST XML based on site model settings.
  * @returns {HTMLElement}
@@ -129,7 +131,7 @@ function updateStartingTree(beast) {
     // Random Starting Tree
     if (rescaledTree.length > 0) {
       let new_coalescentSimulator = document.createElementNS("", "coalescentSimulator"),
-          taxa = document.createElement("taxa"),
+          taxa = document.createElementNS("", "taxa"),
           constantSize = document.createElementNS("", "constantSize");
       new_coalescentSimulator.setAttribute("id", "startingTree");
       taxa.setAttribute("idref", "taxa");
@@ -211,6 +213,7 @@ function update_operators(beast) {
  * Update <strictClockBranchRates> or <discretizedBranchRates> elements
  * throughout XML.  Since tagName is not writable, we have to create new
  * Elements and replace the existing ones.
+ * There must be a simpler way to do this...
  *
  * @param beast:  parent Element
  */
@@ -222,6 +225,52 @@ function updateBranchRates(beast) {
 
   let dbr = document.createElementNS("", "discretizedBranchRates");
   dbr.setAttributeNS("", "idref", "branchRates");
+
+  // ========= update clock model ==========
+  let branch_rates = beast.getElementsByTagName("strictClockBranchRates"),
+      clock_model;
+
+  if (branch_rates.length > 0) {
+    if (clock_option !== 'strict') {
+      clock_model = Array.from(branch_rates).filter(x => x.id==="branchRates")[0];
+
+      let ucld_mean = priors.filter(x => x.parameter==='ucld.mean')[0],
+          ucld_stdev = priors.filter(x => x.parameter==='ucld.stdev')[0],
+          big_dbr = xmlReader.parseFromString(`
+<discretizedBranchRates id="branchRates">
+  <treeModel idref="treeModel"/>
+  <distribution>
+    <logNormalDistributionModel meanInRealSpace="true">
+    <mean><parameter id="ucld.mean" value="${ucld_mean.obj.initial}"/></mean>
+    <stdev><parameter id="ucld.stdev" value="${ucld_stdev.obj.initial}" lower="0.0"/></stdev>
+    </logNormalDistributionModel>
+  </distribution>
+  <rateCategories><parameter id="branchRates.categories"/></rateCategories>
+</discretizedBranchRates>`,
+              'text/xml').children[0];
+
+      beast.replaceChild(big_dbr, clock_model);
+    }
+  }
+  else {
+    branch_rates = beast.getElementsByTagName("discretizedBranchRates");
+    if (branch_rates.length === 0) {
+      alert("Could not retrieve either type of branchRates element!");
+    }
+
+    if (clock_option === 'strict') {
+      clock_model = Array.from(branch_rates).filter(x => x.id==="branchRates")[0];
+
+      let clock_rate = priors.filter(x => x.parameter==='clock.rate')[0],
+          big_scbr = xmlReader.parseFromString(`
+<strictClockBranchRates id="branchRates">
+  <rate><parameter id="clock.rate" value="${clock_rate.obj.initial}"/></rate>
+</strictClockBranchRates>`,
+              'text/xml').children[0];
+
+      beast.replaceChild(big_scbr, clock_model);
+    }
+  }
 
   // ========= update <rateStatistic> ==========
   let rateStatistic = beast.getElementsByTagName("rateStatistic")[0],
