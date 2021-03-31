@@ -35,8 +35,8 @@ function generate_site_model() {
   freq_model.appendChild(fm_freq);
   frequencies.appendChild(freq_model);
 
-  let kappa = document.createElement("kappa"),
-      kpar = document.createElement("parameter");
+  let kappa = document.createElementNS("", "kappa"),
+      kpar = document.createElementNS("", "parameter");
 
   kpar.setAttribute("id", "kappa");
   kpar.setAttribute("value", model_name==="JC"?"1.0":"2.0");
@@ -79,7 +79,7 @@ function update_log_settings(html_collection, idref) {
 
   if (active.length > 0 && el.length === 0) {
     // restore element
-    let nel = document.createElement("parameter");
+    let nel = document.createElementNS("", "parameter");
     nel.setAttribute("idref", idref);
     html_collection.appendChild(nel);
   }
@@ -129,10 +129,10 @@ function updateStartingTree(beast) {
     // UPGMA Starting Tree
     if (coalescentSimulator.length > 0) {
       let new_rescaledTree = document.createElementNS("", "rescaledTree"),
-          patterns = document.createElement("patterns"),
+          patterns = document.createElementNS("", "patterns"),
           distanceMatrix = document.createElementNS("", "distanceMatrix"),
           new_upgmaTree = document.createElementNS("", "upgmaTree"),
-          alignment = document.createElement("alignment");
+          alignment = document.createElementNS("", "alignment");
       
       new_rescaledTree.setAttribute("id", "startingTree");
       distanceMatrix.setAttribute("correction", "JC");
@@ -186,7 +186,7 @@ function updateStartingTree(beast) {
       beast.removeChild(beast.getElementsByTagName("exponentialMarkovLikelihood")[0]);
 
       let new_coalescentLikelihood = document.createElementNS("", "coalescentLikelihood"),
-          new_model = document.createElement("taxa"),
+          new_model = document.createElementNS("", "taxa"),
           new_constantSize = document.createElementNS("", "constantSize");
 
       new_constantSize.setAttribute("idref", id);
@@ -308,7 +308,7 @@ function update_operators(beast) {
     else {
       // fixed prior, restore default operator
       let sOp = document.createElementNS("", "scaleOperator"),
-          par = document.createElement("parameter");
+          par = document.createElementNS("", "parameter");
       sOp.setAttributeNS("", "scaleFactor", "0.75");
       sOp.setAttributeNS("", "scaleAll", "true");
       sOp.setAttributeNS("", "ignoreBounds", "true");
@@ -367,7 +367,9 @@ function updateBranchRates(beast) {
       clock_model;
 
   if (branch_rates.length > 0) {
+    // current XML contains <strictClockBranchRates>
     if (clock_option !== 'strict') {
+      // strict -> ucln
       clock_model = Array.from(branch_rates).filter(x => x.id==="branchRates")[0];
 
       let ucld_mean = priors.filter(x => x.parameter==='ucld.mean')[0],
@@ -377,7 +379,7 @@ function updateBranchRates(beast) {
   <treeModel idref="treeModel"/>
   <distribution>
     <logNormalDistributionModel meanInRealSpace="true">
-    <mean><parameter id="ucld.mean" value="${ucld_mean.obj.initial}"/></mean>
+    <mean><parameter id="ucld.mean" value="${ucld_mean.obj.initial}" lower="0.0"/></mean>
     <stdev><parameter id="ucld.stdev" value="${ucld_stdev.obj.initial}" lower="0.0"/></stdev>
     </logNormalDistributionModel>
   </distribution>
@@ -389,18 +391,20 @@ function updateBranchRates(beast) {
     }
   }
   else {
+    // current XML contains <discretizedBranchRates>
     branch_rates = beast.getElementsByTagName("discretizedBranchRates");
     if (branch_rates.length === 0) {
       alert("Could not retrieve either type of branchRates element!");
     }
 
     if (clock_option === 'strict') {
+      // relaxed -> strict
       clock_model = Array.from(branch_rates).filter(x => x.id==="branchRates")[0];
 
       let clock_rate = priors.filter(x => x.parameter==='clock.rate')[0],
           big_scbr = xmlReader.parseFromString(`
 <strictClockBranchRates id="branchRates">
-  <rate><parameter id="clock.rate" value="${clock_rate.obj.initial}"/></rate>
+  <rate><parameter id="clock.rate" value="${clock_rate.obj.initial}" lower="0.0"/></rate>
 </strictClockBranchRates>`,
               'text/xml').children[0];
 
@@ -558,7 +562,7 @@ function update_mcmc(beast) {
     else {
       if (!$("#use_tip_dates")[0].checked) {
         // age(root) -> rootHeight
-        let par = document.createElement("parameter");
+        let par = document.createElementNS("", "parameter");
         par.setAttribute("idref", "treeModel.rootHeight");
         els[0].setAttribute("label", "rootHeight");
         els[0].replaceChild(par, els[0].children[0]);
@@ -572,7 +576,7 @@ function update_mcmc(beast) {
   else {
     if ($("#use_tip_dates")[0].checked) {
       // rootHeight -> age(root)
-      let par = document.createElement("tmrcaStatistic");
+      let par = document.createElementNS("", "tmrcaStatistic");
       par.setAttribute("idref", "age(root)");
       els[0].setAttribute("label", "age(root)")
       els[0].replaceChild(par, els[0].children[0]);
@@ -595,7 +599,7 @@ function update_mcmc(beast) {
       // add ucld.mean to screen log if not present
       if (els.length === 0) {
         let column = document.createElementNS("", "column"),
-            par = document.createElement("parameter");
+            par = document.createElementNS("", "parameter");
         column.setAttribute("label", this_clock);
         column.setAttribute("sf", "6");
         column.setAttribute("width", "12");
@@ -635,12 +639,12 @@ function update_alignment(beast) {
 
   // append user taxa and sequences
   for (let i=0; i < alignment.length; i++) {
-    let taxon = document.createElement('taxon');
+    let taxon = document.createElementNS("", 'taxon');
     taxon.setAttribute("id", alignment[i]['header']);
 
     // apply tip date settings
     if ($("#use_tip_dates")[0].checked) {
-      let date = document.createElement('date');
+      let date = document.createElementNS("", 'date');
       date.setAttribute("value", alignment[i]['date']);
       if ($("#dates_as_direction").val() === 'since') {
         date.setAttribute("direction", "forwards");
@@ -654,8 +658,8 @@ function update_alignment(beast) {
 
     taxa.appendChild(taxon);
 
-    let seq = document.createElement('sequence'),
-        seq_taxon = document.createElement('taxon');
+    let seq = document.createElementNS("", 'sequence'),
+        seq_taxon = document.createElementNS("", 'taxon');
     seq_taxon.setAttribute("idref", alignment[i]['header']);
 
     // setting textContent wipes out all child nodes
@@ -695,8 +699,8 @@ function export_xml() {
   // is this a dated tip analysis?  if not, omit tmrcaStatistic
   let tmrca = beast.getElementsByTagName("tmrcaStatistic");
   if ($("#use_tip_dates")[0].checked && tmrca.length === 0) {
-    let el = document.createElement("tmrcaStatistic"),
-        tm = document.createElement("treeModel");
+    let el = document.createElementNS("", "tmrcaStatistic"),
+        tm = document.createElementNS("", "treeModel");
 
     el.setAttribute("id", "age(root)");
     el.setAttribute("absolute", "true");

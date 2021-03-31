@@ -24,7 +24,7 @@ function LogNormalPrior(idref, initial=1.0, mu=1.0, sigma=1.0, offset=0.0, lower
 
   this.operator = function() {
     let op = document.createElementNS("", "scaleOperator"),
-        par = document.createElement("parameter");
+        par = document.createElementNS("", "parameter");
     op.setAttribute("scaleFactor", "0.75");
     op.setAttribute("weight", "1");
 
@@ -35,7 +35,7 @@ function LogNormalPrior(idref, initial=1.0, mu=1.0, sigma=1.0, offset=0.0, lower
 
   this.element = function() {
     let el = document.createElementNS("", "logNormalPrior"),
-        par = document.createElement("parameter");
+        par = document.createElementNS("", "parameter");
 
     el.setAttribute("mu", this.mu.toString());
     el.setAttribute("sigma", this.sigma.toString());
@@ -61,7 +61,7 @@ function NormalPrior(idref, initial=0.0, mean=0.0, stdev=1.0, lower=-Infinity, u
 
   this.operator = function() {
     let op = document.createElementNS("", "scaleOperator"),
-        par = document.createElement("parameter");
+        par = document.createElementNS("", "parameter");
     op.setAttribute("scaleFactor", "0.75");
     op.setAttribute("weight", "1");
     par.setAttribute("idref", this.idref);
@@ -71,7 +71,7 @@ function NormalPrior(idref, initial=0.0, mean=0.0, stdev=1.0, lower=-Infinity, u
 
   this.element = function() {
     let el = document.createElementNS("", "normalPrior"),
-        par = document.createElement("parameter");
+        par = document.createElementNS("", "parameter");
     el.setAttribute("mean", this.mean.toString());
     el.setAttribute("stdev", this.stdev.toString());
     par.setAttribute("idref", this.idref);
@@ -92,7 +92,7 @@ function InversePrior(idref, initial=1.0, lower=0, upper=Infinity) {
 
   this.element = function() {
     let el = document.createElementNS("", "oneOnXPrior"),
-        par = document.createElement("parameter");
+        par = document.createElementNS("", "parameter");
     par.setAttribute("idref", this.idref);
     el.appendChild(par);
     return el;
@@ -100,7 +100,7 @@ function InversePrior(idref, initial=1.0, lower=0, upper=Infinity) {
 
   this.operator = function() {
     let op = document.createElementNS("", "scaleOperator"),
-        par = document.createElement("parameter");
+        par = document.createElementNS("", "parameter");
     op.setAttribute("scaleFactor", "0.75");
     op.setAttribute("weight", "3");
     par.setAttribute("idref", this.idref);
@@ -124,8 +124,8 @@ function GammaPrior(idref, initial=2.0, shape=0.5, scale=2, offset=0.0,
 
   this.operator = function() {
     let op = document.createElementNS("", "scaleOperator"),
-        par = document.createElement("parameter");
-    op.setAttribute("scaleFactor", "0.75");
+        par = document.createElementNS("", "parameter");
+    op.setAttributeNS("", "scaleFactor", "0.75");
     op.setAttribute("weight", "1");
     par.setAttribute("idref", this.idref);
     op.appendChild(par);
@@ -134,7 +134,7 @@ function GammaPrior(idref, initial=2.0, shape=0.5, scale=2, offset=0.0,
 
   this.element = function() {
     let el = document.createElementNS("", "gammaPrior"),
-        par = document.createElement("parameter");
+        par = document.createElementNS("", "parameter");
     el.setAttribute("shape", this.shape.toString());
     el.setAttribute("scale", this.scale.toString());
     el.setAttribute("offset", this.offset.toString());
@@ -158,8 +158,8 @@ function LaplacePrior(idref, initial=0.1, mean=0.0, scale=1.0, lower=0,
 
   this.operator = function() {
     let op = document.createElementNS("", "scaleOperator"),
-        par = document.createElement("parameter");
-    op.setAttribute("scaleFactor", "0.75");
+        par = document.createElementNS("", "parameter");
+    op.setAttributeNS("", "scaleFactor", "0.75");
     op.setAttribute("weight", "1");
     par.setAttribute("idref", this.idref);
     op.appendChild(par);
@@ -168,7 +168,7 @@ function LaplacePrior(idref, initial=0.1, mean=0.0, scale=1.0, lower=0,
 
   this.element = function() {
     let el = document.createElementNS("", "laplacePrior"),
-        par = document.createElement("parameter");
+        par = document.createElementNS("", "parameter");
     el.setAttribute("mean", this.mean.toString());
     el.setAttribute("scale", this.scale.toString());
     par.setAttribute("idref", this.idref);
@@ -198,7 +198,7 @@ function UniformPrior(idref, initial=0.5, lower=0, upper=1) {
 
   this.operator = function() {
     let op = document.createElementNS("", "scaleOperator"),
-        par = document.createElement("parameter");
+        par = document.createElementNS("", "parameter");
     op.setAttribute("scaleFactor", "0.75");
     op.setAttribute("weight", "1");
     par.setAttribute("idref", this.idref);
@@ -208,7 +208,7 @@ function UniformPrior(idref, initial=0.5, lower=0, upper=1) {
 
   this.element = function() {
     let el = document.createElementNS("", "uniformPrior"),
-        par = document.createElement("parameter");
+        par = document.createElementNS("", "parameter");
     el.setAttribute("lower", this.bound[0].toString());
     el.setAttribute("upper", this.bound[1].toString());
     par.setAttribute("idref", this.idref);
@@ -230,8 +230,8 @@ function ExponentialPrior(idref, initial=0.5, mean=0.5, offset=0,
 
   this.operator = function() {
     let op = document.createElementNS("", "scaleOperator"),
-        par = document.createElement("parameter");
-    op.setAttribute("scaleFactor", "0.75");
+        par = document.createElementNS("", "parameter");
+    op.setAttributeNS("", "scaleFactor", "0.75");
     op.setAttribute("weight", "1");
     par.setAttribute("idref", this.idref);
     op.appendChild(par);
@@ -240,7 +240,7 @@ function ExponentialPrior(idref, initial=0.5, mean=0.5, offset=0,
 
   this.element = function() {
     let el = document.createElementNS("", "exponentialPrior"),
-        par = document.createElement("parameter");
+        par = document.createElementNS("", "parameter");
     el.setAttribute("mean", this.mean.toString());
     el.setAttribute("offset", this.offset.toString());
     par.setAttribute("idref", this.idref);
@@ -261,9 +261,9 @@ function DirichletPrior(idref) {
 
   this.element = function() {
     let el = document.createElementNS("", "dirichletPrior"),
-        par = document.createElement("parameter");
+        par = document.createElementNS("", "parameter");
     el.setAttribute("alpha", this.alpha.toString());
-    el.setAttribute("sumsTo", this.sumsto.toString());
+    el.setAttributeNS("", "sumsTo", this.sumsto.toString());
     par.setAttribute("idref", this.idref);
     el.appendChild(par);
     return el;
@@ -271,7 +271,7 @@ function DirichletPrior(idref) {
 
   this.operator = function() {
     let op = document.createElementNS("", "deltaExchange"),
-        par = document.createElement("parameter");
+        par = document.createElementNS("", "parameter");
     op.setAttribute("delta", "0.01");
     op.setAttribute("weight", "1");
     par.setAttribute("idref", this.idref);
@@ -289,7 +289,7 @@ function DefaultPrior(idref) {
 
   this.operator = function() {
     let op = document.createElementNS("", "scaleOperator"),
-        par = document.createElement("parameter");
+        par = document.createElementNS("", "parameter");
     op.setAttribute("scaleFactor", "0.75");
     op.setAttribute("weight", "3");
     par.setAttribute("idref", this.idref);
