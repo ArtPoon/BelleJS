@@ -5,11 +5,11 @@ var xmlReader = new DOMParser();
  * @returns {HTMLElement}
  */
 function generate_site_model() {
-  let frequencies = document.createElement("frequencies"),
+  let frequencies = document.createElementNS("", "frequencies"),
       freq_model = document.createElementNS("", "frequencyModel"),
-      aln = document.createElement("alignment"),
-      fm_freq = document.createElement("frequencies"),
-      fm_param = document.createElement("parameter"),
+      aln = document.createElementNS("", "alignment"),
+      fm_freq = document.createElementNS("", "frequencies"),
+      fm_param = document.createElementNS("", "parameter"),
       site_model,
       model_name = $("#select-submodel").val(),
       basefreq_option = $("#select-basefreq").val();
@@ -73,22 +73,27 @@ function filterHTMLCollectionByChild(collection, attr, value) {
  * @param idref
  */
 function update_log_settings(html_collection, idref) {
-  let el = filterHTMLCollection(html_collection, "idref", idref);
-  if (priors.filter(x=>x.parameter===idref)[0].active) {
-    if (el.length === 0) {
-      // restore element
-      let nel = document.createElement("parameter");
-      nel.setAttribute("idref", idref);
-      html_collection.appendChild(nel);
-    } // otherwise no action necessary
-  } else {
-    if (el.length > 0) {
-      // delete element
-      html_collection.removeChild(el[0]);
-    } // otherwise no action necessary
+  let el = filterHTMLCollection(html_collection, "idref", idref),
+      this_prior = priors.filter(x => x.parameter===idref),
+      active = this_prior.filter(x => x.active);
+
+  if (active.length > 0 && el.length === 0) {
+    // restore element
+    let nel = document.createElement("parameter");
+    nel.setAttribute("idref", idref);
+    html_collection.appendChild(nel);
+  }
+  if (active.length === 0 && el.length > 0) {
+    // delete element
+    html_collection.removeChild(el[0]);
   }
 }
 
+
+/**
+ * FIXME: there has to be a better way to do this!
+ * @param beast
+ */
 function updateStartingTree(beast) {
   let startingTree = beast.getElementsByTagName("constantSize")[0],
       param = startingTree.getElementsByTagName("parameter")[0],
@@ -243,24 +248,42 @@ function updateStartingTree(beast) {
  */
 function update_prior_xml(html_collection, idref) {
   let el = filterHTMLCollectionByChild(html_collection, "idref", idref),
-      this_prior = priors.filter(x=>x.parameter===idref)[0];
+      this_prior = priors.filter(x=>x.parameter===idref);
 
-  if (this_prior.active) {
-    if (el.length === 0) {
-      // restore element
-      let nel = this_prior.obj.element();
+  if (idref === "clock.rate" || idref === "ucld.mean") {
+    let active = this_prior.filter(x => x.active);
+    if (active.length > 0) {
+      // FIXME: this gets called twice - for now I am using Set() in calling function.
+      // remove all related elements
+      for (let this_el of el) {
+        html_collection.removeChild(this_el);
+      }
+      // append active element
+      let nel = active[0].obj.element();
       if (nel !== null) {
         html_collection.appendChild(nel);
       }
-    } // otherwise no action necessary
+    }
   }
   else {
-    // prior is not active
-    if (el.length > 0) {
-      // delete element
-      html_collection.removeChild(el[0]);
-    } // otherwise no action necessary
+    if (this_prior[0].active) {
+      if (el.length === 0) {
+        // restore element
+        let nel = this_prior[0].obj.element();
+        if (nel !== null) {
+          html_collection.appendChild(nel);
+        }
+      } // otherwise no action necessary
+    }
+    else {
+      // prior is not active
+      if (el.length > 0) {
+        // delete element
+        html_collection.removeChild(el[0]);
+      } // otherwise no action necessary
+    }
   }
+
 }
 
 
@@ -270,8 +293,8 @@ function update_prior_xml(html_collection, idref) {
  */
 function update_operators(beast) {
   let operators = beast.getElementsByTagName("operators")[0],
-      ucld_mean = priors.filter(x => x.parameter==="ucld.mean"),
-      active = ucld_mean.filter(x => x.active);
+      clocks = priors.filter(x => x.parameter==="clock.rate" || x.parameter==="ucld.mean"),
+      active = clocks.filter(x => x.active);
 
   if (active.length > 0) {
     if (active[0].obj.constructor.name === "CTMCScalePrior") {
@@ -517,7 +540,8 @@ function update_mcmc(beast) {
   }
 
   // modify <prior> tag contents
-  priors.map(x => update_prior_xml(prior, x.parameter));
+  let params = new Set(priors.map(x => x.parameter));
+  Array.from(params).map(x => update_prior_xml(prior, x));
 
 
   // ==== screen log settings ========
@@ -559,22 +583,23 @@ function update_mcmc(beast) {
     }
   }
 
-  // special case: if using UCLN with dated tips, report ucld.mean
-  let ucld_mean = priors.filter(x => x.parameter==="ucld.mean"),
-      active = ucld_mean.filter(x => x.active);
+  // if using dated tips, report clock.rate or ucld.mean to screen
+  let clocks = priors.filter(x => x.parameter==="clock.rate" || x.parameter==="ucld.mean"),
+      active = clocks.filter(x => x.active);
 
   if (active.length > 0) {
-    let els = filterHTMLCollectionByChild(logs[0], "idref", "ucld.mean");
+    let this_clock = active[0].parameter,
+        els = filterHTMLCollectionByChild(logs[0], "idref", this_clock);
 
     if (active[0].obj.constructor.name === "CTMCScalePrior") {
       // add ucld.mean to screen log if not present
       if (els.length === 0) {
-        let column = document.createElement("column"),
+        let column = document.createElementNS("", "column"),
             par = document.createElement("parameter");
-        column.setAttribute("label", "ucld.mean");
+        column.setAttribute("label", this_clock);
         column.setAttribute("sf", "6");
         column.setAttribute("width", "12");
-        par.setAttribute("idref", "ucld.mean");
+        par.setAttribute("idref", this_clock);
         column.appendChild(par);
         logs[0].appendChild(column);
       }

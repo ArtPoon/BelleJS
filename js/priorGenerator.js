@@ -320,23 +320,23 @@ function CTMCScalePrior(idref, initial) {
   // TODO: this has to replace scaleOperator for allInternalNodeHeights
   this.operator = function() {
     let sOp = document.createElementNS("", "scaleOperator"),
-        par1 = document.createElement("parameter"),
+        par1 = document.createElementNS("", "parameter"),
         udOp = document.createElementNS("", "upDownOperator"),
-        up = document.createElement("up"),
-        par2 = document.createElement("parameter"),
-        down = document.createElement("down"),
-        par3 = document.createElement("parameter");
+        up = document.createElementNS("", "up"),
+        par2 = document.createElementNS("", "parameter"),
+        down = document.createElementNS("", "down"),
+        par3 = document.createElementNS("", "parameter");
 
     sOp.setAttributeNS("", "scaleFactor", "0.75");
-    sOp.setAttribute("weight", "3");
-    par1.setAttribute("idref", "ucld.mean");
+    sOp.setAttributeNS("", "weight", "3");
+    par1.setAttributeNS("", "idref", `${this.idref}`);  // clock.rate or ucld.mean
     sOp.appendChild(par1);
 
-    udOp.setAttribute("scaleFactor", "0.75");
-    udOp.setAttribute("weight", "3");
-    par2.setAttribute("idref", "treeModel.allInternalNodeHeights");
+    udOp.setAttributeNS("", "scaleFactor", "0.75");
+    udOp.setAttributeNS("", "weight", "3");
+    par2.setAttributeNS("", "idref", "treeModel.allInternalNodeHeights");
     up.appendChild(par2);
-    par3.setAttribute("idref", "ucld.mean");
+    par3.setAttributeNS("", "idref", `${this.idref}`);
     down.appendChild(par3);
     udOp.appendChild(up);
     udOp.appendChild(down);
@@ -347,7 +347,7 @@ function CTMCScalePrior(idref, initial) {
   this.element = function() {
     return xmlReader.parseFromString(`<ctmcScalePrior>
   <ctmcScale>
-    <parameter idref="ucld.mean"/>
+    <parameter idref="${this.idref}"/>
   </ctmcScale>
   <treeModel idref="treeModel"/>
 </ctmcScalePrior>`, 'text/xml').children[0];
@@ -408,6 +408,12 @@ priors = [
     obj: new FixedValuePrior("clock.rate"),
     description: "substitution rate",
     active: true
+  },
+  {
+    parameter: "clock.rate",
+    obj: new CTMCScalePrior("clock.rate"),
+    description: "substitution rate",
+    active: false
   },
   {
     parameter: "ucld.mean",
