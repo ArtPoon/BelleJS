@@ -193,7 +193,7 @@ function set_tree_prior(beast) {
   coalescentLikelihood = Array.from(coalescentLikelihood).filter(x => x.parentNode===beast);
   generalizedSkyLineLikelihood = Array.from(generalizedSkyLineLikelihood).filter(x => x.parentNode===beast);
   exponentialMarkovLikelihood = Array.from(exponentialMarkovLikelihood).filter(x => x.parentNode===beast);
-  
+
   if (constant.active) {
     // is coalescentLikelihood already present?
 
@@ -215,19 +215,19 @@ function set_tree_prior(beast) {
       clike.appendChild(poptree);
 
       beast.insertBefore(clike, anchor[0]);
-    }
-    else {
-      console.log(coalescentLikelihood);
+
+      // add coalescent likelihood to prior settings
+      let clike2 = document.createElementNS("", "coalescentLikelihood");
+      clike2.setAttribute("idref", "coalescent");
+      prior.appendChild(clike2);
     }
 
-
-    // remove skyline likelihoods
+    // remove skyline likelihoods, if any
     if (generalizedSkyLineLikelihood.length > 0)
       beast.removeChild(generalizedSkyLineLikelihood[0]);
 
     if (exponentialMarkovLikelihood.length > 0)
       beast.removeChild(exponentialMarkovLikelihood[0]);
-
 
     // remove skyline likelihoods from prior settings
     let gsl = prior.getElementsByTagName("generalizedSkyLineLikelihood"),
@@ -235,10 +235,6 @@ function set_tree_prior(beast) {
     if (gsl.length > 0) prior.removeChild(gsl[0]);
     if (eml.length > 0) prior.removeChild(eml[0]);
 
-    // add coalescent likelihood to prior settings
-    let clike = document.createElement("coalescentLikelihood");
-    clike.setAttribute("idref", "coalescent");
-    prior.appendChild(clike);
   }
   else {
     // skyline is active, constant is not
@@ -648,12 +644,14 @@ function update_mcmc(beast) {
         // age(root) -> rootHeight
         let par = document.createElementNS("", "parameter");
         par.setAttribute("idref", "treeModel.rootHeight");
-        els[0].setAttribute("label", "rootHeight");
-        els[0].replaceChild(par, els[0].children[0]);
 
-        // assume file log is affected the same way
-        let fels = filterHTMLCollection(logs[1], "idref", "age(root)");
-        logs[1].replaceChild(par, fels[0]);
+        let column = document.createElementNS("", "column");
+        column.setAttribute("label", "rootHeight");
+        column.setAttribute("sf", "6");
+        column.setAttribute("width", "12");
+        column.appendChild(par);
+
+        logs[0].replaceChild(column, els[0]);
       }
     }
   }
@@ -662,12 +660,14 @@ function update_mcmc(beast) {
       // rootHeight -> age(root)
       let par = document.createElementNS("", "tmrcaStatistic");
       par.setAttribute("idref", "age(root)");
-      els[0].setAttribute("label", "age(root)")
-      els[0].replaceChild(par, els[0].children[0]);
 
-      // update file log
-      let fels = filterHTMLCollection(logs[1], "idref", "treeModel.rootHeight");
-      logs[1].replaceChild(par, fels[0]);
+      let column = document.createElementNS("", "column");
+      column.setAttribute("label", "age(root)");
+      column.setAttribute("sf", "6");
+      column.setAttribute("width", "12");
+      column.appendChild(par);
+
+      logs[0].replaceChild(column, els[0]);  // els holds rootHeight match
     }
   }
 
@@ -706,6 +706,34 @@ function update_mcmc(beast) {
 
   priors.map(x => update_log_settings(logs[1], x.parameter));
 
+  let fels = filterHTMLCollection(logs[1], "idref", "treeModel.rootHeight");
+
+  if (fels.length === 0) {
+    console.log('one');
+    // look for <tmrcaStatistic> child
+    fels = filterHTMLCollection(logs[1], "idref", "age(root)");
+    if (fels.length === 0) {
+      alert("ERROR: failed to retrieve rootHeight or age(root) entries in file log settings")
+    }
+    else {
+      if (!$("#use_tip_dates")[0].checked) {
+        // age(root) -> rootHeight
+        let par = document.createElementNS("", "parameter");
+        par.setAttribute("idref", "treeModel.rootHeight");
+        logs[1].replaceChild(par, fels[0]);
+      }
+    }
+  }
+  else {
+    console.log('two');
+    // treeModel.rootHeight is being recorded
+    if ($("#use_tip_dates")[0].checked) {
+      // rootHeight -> age(root)
+      let par = document.createElementNS("", "tmrcaStatistic");
+      par.setAttribute("idref", "age(root)");
+      logs[1].replaceChild(par, fels[0]);
+    }
+  }
 
   // === tree log settings ====================
   treelog.setAttribute("logEvery", $("#log_parameters_every").val());
