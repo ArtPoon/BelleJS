@@ -220,6 +220,19 @@ function set_tree_prior(beast) {
       let clike2 = document.createElementNS("", "coalescentLikelihood");
       clike2.setAttribute("idref", "coalescent");
       prior.appendChild(clike2);
+
+      // remove generalized likelihood from log
+      let log = beast.getElementsByTagName("log")[1],
+          log_generalized = log.getElementsByTagName("generalizedSkyLineLikelihood"),
+          log_coalescent = xmlReader.parseFromString(`
+          <coalescentLikelihood idref="coalescent"/>
+                        `, 'text/xml').children[0];
+                        
+      if (log_generalized.length > 0) {
+        log.removeChild(log_generalized[0]);
+      }
+      log.appendChild(log_coalescent);
+
     }
 
     // remove skyline likelihoods, if any
@@ -306,6 +319,19 @@ function set_tree_prior(beast) {
     if (clike.length > 0) {
       prior.removeChild(clike[0]);
     }
+
+    // remove coalescent likelihood from log
+    let log = beast.getElementsByTagName("log")[1],
+        log_coalescent = log.getElementsByTagName("coalescentLikelihood"),
+        log_generalized = xmlReader.parseFromString(`
+    <generalizedSkyLineLikelihood idref="skyline"/>
+                  `, 'text/xml').children[0];
+
+    if (log_coalescent.length > 0) {
+      log.removeChild(log_coalescent[0]);
+    }
+
+    log.appendChild(log_generalized);
 
     // add skyline likelihoods to prior settings
     let gsl = document.createElementNS("", "generalizedSkyLineLikelihood"),
@@ -422,6 +448,32 @@ function update_operators(beast) {
       }
     }
   }
+
+  let delta = operators.getElementsByTagName("deltaExchange");
+  for (let d of delta) {
+    operators.removeChild(d);
+  }
+
+  let operator_generalized = xmlReader.parseFromString(`
+<deltaExchange delta="1" integer="true" weight="6" autoOptimize="false">
+  <parameter idref="skyline.groupSize"/>
+</deltaExchange>
+            `, 'text/xml').children[0],
+      operator_frequencies = xmlReader.parseFromString(`
+<deltaExchange delta="0.01" weight="1">
+    <parameter idref="frequencies"/>
+</deltaExchange>
+            `, 'text/xml').children[0];
+
+
+  // Add Delta Exchange
+  if (priors.filter(x=>x.parameter==="skyline.popSize")[0].active) {
+      operators.appendChild(operator_generalized);
+  }
+
+  if (priors.filter(x=>x.parameter==="frequencies")[0].active) {
+    operators.appendChild(operator_frequencies);
+}
 }
 
 

@@ -18,6 +18,7 @@ function changeSubModel() {
     freq[0].disabled = false;
   }
   kappa.active = submod !== "JC";
+  changeBaseFreq();
 }
 
 function changeBaseFreq() {
