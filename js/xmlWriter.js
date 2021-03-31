@@ -104,9 +104,7 @@ function updateStartingTree(beast) {
       upgmaTree = treeModel.getElementsByTagName("upgmaTree"),
       coalescentSimulator = beast.getElementsByTagName("coalescentSimulator"),
       rescaledTree = beast.getElementsByTagName("rescaledTree"),
-      id = skyline.active ? "initialDemo" : "constant",
-      coalescentLikelihood = beast.getElementsByTagName("coalescentLikelihood"),
-      generalizedSkyLineLikelihood = beast.getElementsByTagName("generalizedSkyLineLikelihood");
+      id = skyline.active ? "initialDemo" : "constant";
 
   // Constant size or Bayesian Skyline
   startingTree.setAttribute("id", id);
@@ -179,7 +177,22 @@ function updateStartingTree(beast) {
 
   new_treeModel.setAttribute("idref", "treeModel");
   new_populationTree.appendChild(new_treeModel);
-  
+}
+
+
+/**
+ * Constant coalescent or skyline
+ *
+ * @param beast
+ */
+function set_tree_prior(beast) {
+  let skyline = priors.filter(x=>x.parameter==="skyline.popSize")[0],
+      constant = priors.filter(x=>x.parameter==="constant.popSize")[0],
+      coalescentLikelihood = beast.getElementsByTagName("coalescentLikelihood"),
+      generalizedSkyLineLikelihood = beast.getElementsByTagName("generalizedSkyLineLikelihood"),
+      mcmc = beast.getElementsByTagName("mcmc")[0],
+      prior = mcmc.getElementsByTagName("prior")[0];
+
   if (constant.active) {
     // Generate a Coalescent likelihood
     if (generalizedSkyLineLikelihood.length > 0) {
@@ -195,16 +208,37 @@ function updateStartingTree(beast) {
       new_coalescentLikelihood.appendChild(new_populationTree);
       beast.replaceChild(new_coalescentLikelihood, generalizedSkyLineLikelihood[0]);
     }
+
+    // TODO: remove skyline likelihoods if present, restore coalescent likelihood
+
+    // remove skyline likelihoods
+    let gsl = prior.getElementsByTagName("generalizedSkyLineLikelihood"),
+        eml = prior.getElementsByTagName("exponentialMarkovLikelihood");
+    if (gsl.length > 0) prior.removeChild(gsl[0]);
+    if (eml.length > 0) prior.removeChild(eml[0]);
+
+    // add coalescent likelihood
+    let clike = document.createElement("coalescentLikelihood");
+    clike.setAttribute("idref", "coalescent");
+    prior.appendChild(clike);
   }
   else {
-    var num_groups = parseInt($("#skygridNumParam").val());
+    let num_groups = parseInt($("#skygridNumParam").val()),
+        piecewise_linear = $("#select-skyline").val()==="skylinePWConst";
 
-    // Generate a generalizedSkyLineLikelihood for Bayesian Skyline
+    // Create new elements for for Bayesian Skyline
     if (coalescentLikelihood.length > 0 && coalescentLikelihood[0].parentElement.nodeName === "beast") {
-      let generalizedSkyline= xmlReader.parseFromString(`
-<generalizedSkyLineLikelihood id="skyline" linear="true">
+      let generalizedSkyline,
+          exponentialMarkovLikelihood;
+
+
+      generalizedSkyline= xmlReader.parseFromString(`
+<generalizedSkyLineLikelihood id="skyline" linear="${piecewise_linear}">
   <populationSizes>
-    <parameter id="skyline.popSize" dimension="${$("#select-skyline").val() === "skylinePWConst" ? num_groups.toString() : (num_groups + 1).toString()}" value="${skyline.obj.initial.toFixed(1).toString()}" lower="${skyline.obj.bound[0].toFixed(1).toString()}"/>
+    <parameter id="skyline.popSize" 
+    dimension="${piecewise_linear ? num_groups.toString() : (num_groups + 1).toString()}" 
+    value="${skyline.obj.initial.toFixed(1).toString()}" 
+    lower="${skyline.obj.bound[0].toFixed(1).toString()}"/>
   </populationSizes>
   <groupSizes>
     <parameter id="skyline.groupSize" dimension="${num_groups}"/>
@@ -213,7 +247,9 @@ function updateStartingTree(beast) {
     <treeModel idref="treeModel"/>
   </populationTree>
 </generalizedSkyLineLikelihood>
-              `, 'text/xml').children[0],
+              `, 'text/xml').children[0];
+
+
       exponentialMarkovLikelihood = xmlReader.parseFromString(`
 <exponentialMarkovLikelihood id="eml1" jeffreys="true">
   <chainParameter>
@@ -228,14 +264,38 @@ function updateStartingTree(beast) {
 
     }
     else {
-      let popSiz_param = generalizedSkyLineLikelihood[0].getElementsByTagName("populationSizes")[0].getElementsByTagName("parameter")[0],
-          groupSiz_param = generalizedSkyLineLikelihood[0].getElementsByTagName("groupSizes")[0].getElementsByTagName("parameter")[0];
-      popSiz_param.setAttribute("dimension", $("#select-skyline").val() === "skylinePWConst" ? num_groups.toString() : (num_groups + 1).toString());
+      // re-use existing skyline elements
+      let popSiz_param = generalizedSkyLineLikelihood[0]
+              .getElementsByTagName("populationSizes")[0]
+              .getElementsByTagName("parameter")[0],
+          groupSiz_param = generalizedSkyLineLikelihood[0]
+              .getElementsByTagName("groupSizes")[0]
+              .getElementsByTagName("parameter")[0];
+
+      popSiz_param.setAttribute("dimension",
+          $("#select-skyline").val() === "skylinePWConst" ?
+              num_groups.toString() :
+              (num_groups + 1).toString());
+
       popSiz_param.setAttribute("value", skyline.obj.initial.toFixed(1).toString());
       popSiz_param.setAttribute("lower", skyline.obj.bound[0].toFixed(1).toString());
       groupSiz_param.setAttribute("dimension", num_groups);
     }
   }
+
+  // remove coalescent likelihood
+  let clike = prior.getElementsByTagName("coalescentLikelihood");
+  if (clike.length > 0) {
+    prior.removeChild(clike[0]);
+  }
+
+  // add skyline likelihoods
+  let gsl = document.createElement("generalizedSkyLineLikelihood"),
+      eml = document.createElement("exponentialMarkovLikelihood");
+  gsl.setAttribute("idref", "skyline");
+  prior.appendChild(gsl);
+  eml.setAttribute("idref", "eml1");
+  prior.appendChild(eml);
 }
 
 
@@ -686,6 +746,7 @@ function export_xml() {
 
   update_alignment(beast);
   updateStartingTree(beast);
+  changeTreePrior(beast);  // skyline or constant coalescent
 
   // replace substitution model
   let sub_model = generate_site_model(),
