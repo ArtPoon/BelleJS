@@ -1,4 +1,4 @@
-var priors;
+var priors, distribution_values;
 
 /**
  * Utility functions to create Objects that represent prior distributions.
@@ -361,127 +361,201 @@ priors = [
   // Sites models
   {
     parameter: "kappa",
+    distribution: "Lognormal",
     obj: new LogNormalPrior('kappa'),
     description: "HKY transition-transversion parameter",
-    active: true
+    active: true,
+    prior_distribution: ["Fixed value", "Infinite Uniform (Improper)", "Uniform", "Exponential", "Laplace", "Normal", "Lognormal", "Gamma", "Inverse Gamma", "1/x"]
   },
   {
     parameter: "gtr.rates",
+    distribution: "Dirichlet",
     obj: new DirichletPrior("gtr.rates"),
     description: "GTR transition rates parameter",
-    active: false
+    active: false,
+    prior_distribution: ["Fixed value", "Infinite Uniform (Improper)", "Dirichlet", "Uniform", "Exponential", "Normal", "Lognormal", "Gamma", "Inverse Gamma"]
   },
   {
     parameter: "kappa1",
+    distribution: "Lognormal",
     obj: new LogNormalPrior("kappa1"),
     description: "TN93 1st transition-transversion parameter",
-    active: false
+    active: false,
+    prior_distribution: ["Lognormal"]
   },
   {
     parameter: "kappa2",
+    distribution: "Lognormal",
     obj: new LogNormalPrior("kappa2"),
     description: "TN93 2nd transition-transversion parameter",
-    active: false
+    active: false,
+    prior_distribution: ["Lognormal"]
   },
   {
     parameter: "frequencies",
+    distribution: "Dirichlet",
     obj: new DirichletPrior("frequencies"),
     description: "base frequencies",
-    active: true
+    active: true,
+    prior_distribution: ["Fixed value", "Infinite Uniform (Improper)", "Dirichlet", "Uniform", "Exponential", "Normal", "Lognormal", "Gamma", "Inverse Gamma"]
   },
   {
     parameter: "alpha",
+    distribution: "Exponential",
     obj: new ExponentialPrior("alpha"),
     description: "gamma shape parameter",
-    active: false
+    active: false,
+    prior_distribution: ["Exponential"]
   },
   {
     parameter: "pInv",
+    distribution: "Uniform",
     obj: new UniformPrior("pInv"),
     description: "proportion of invariant sites parameter",
-    active: false
+    active: false,
+    prior_distribution: ["Uniform"]
   },
 
   // Clock models
   {
     parameter: "clock.rate",
+    distribution: "Fixed value",
     obj: new FixedValuePrior("clock.rate"),
     description: "substitution rate",
-    active: true
+    active: true,
+    prior_distribution: ["Fixed value", "CTMC Rate Reference", "Infinite Uniform (Improper)", "Uniform", "Exponential", "Normal", "Lognormal", "Gamma", "Inverse Gamma", "1/x"]
   },
   {
     parameter: "clock.rate",
+    distribution: "CTMC Rate Reference",
     obj: new CTMCScalePrior("clock.rate"),
     description: "substitution rate",
     active: false
   },
   {
     parameter: "ucld.mean",
+    distribution: "Fixed value",
     obj: new FixedValuePrior("ucld.mean"),
     description:  "uncorrelated lognormal relaxed clock mean",
-    active: true
+    active: true,
+    prior_distribution: ["Fixed value", "CTMC Rate Reference", "Infinite Uniform (Improper)", "Uniform", "Exponential", "Normal", "Lognormal", "Gamma", "Inverse Gamma", "1/x"]
   },
   {
     parameter: "ucld.mean",
+    distribution: "CTMC Rate Reference",
     obj: new CTMCScalePrior("ucld.mean"),
     description: "uncorrelated lognormal relaxed clock mean",
-    active: false
+    active: false,
+    prior_distribution: ["Fixed value", "Infinite Uniform (Improper)", "Uniform", "Exponential", "Normal", "Lognormal", "Gamma", "Inverse Gamma", "1/x"]
   },
   {
     parameter: "ucgd.mean",
+    distribution: "Fixed value",
     obj: new FixedValuePrior("ucgd.mean"),
     description: "uncorrelated gamma relaxed clock mean",
-    active: true
+    active: true,
+    prior_distribution: ["Fixed value"]
   },
   {
     parameter: "uced.mean",
+    distribution: "Fixed value",
     obj: new FixedValuePrior("uced.mean"),
     description: "uncorrelated exponential relaxed clock mean",
-    active: true
+    active: true,
+    prior_distribution: ["Fixed value"]
   },
   {
     parameter: "ucld.stdev",
+    distribution: "Exponential",
     obj: new ExponentialPrior(idref="ucld.stdev", initial=0.3333333, mean=0.333333, offset=0),
     description: "uncorrelated lognormal relaxed clock stdev",
-    active: true
+    active: true,
+    prior_distribution: ["Exponential"]
   },
   {
     parameter: "ucgd.shape",
+    distribution: "Exponential",
     obj: new ExponentialPrior(initial=0.3333333, mean=0.333333, offset=0),
     description: "uncorrelated gamma relaxed clock shape",
-    active: true
+    active: true,
+    prior_distribution: ["Exponential"]
   },
   {
     parameter: "rateChanges",
+    distribution: "Poisson",
     obj: new PoissonPrior("rateChanges"),
     description: "number of random local clocks",
-    active: false
+    active: false,
+    prior_distribution: ["Poisson"]
   },
   {
     parameter: "localClock.relativeRates",
+    distribution: "Gamma",
     obj: new GammaPrior('localClock.relativeRates'),
     description: "random local clock relative rates",
-    active: false
+    active: false,
+    prior_distribution: ["Gamma"]
   },
 
   // Tree models
   {
     parameter: "treeModel.rootHeight",
+    distribution: "None (Tree Prior Only)",
     obj: new DefaultPrior('treeModel.rootHeight'),
     description: "root height of the tree",
-    active: true
+    active: true,
+    prior_distribution: ["None (Tree Prior Only)", "Infinite Uniform (Improper)", "Dirichlet", "Uniform", "Exponential", "Normal", "Lognormal", "Gamma", "Inverse Gamma"]
   },
   {
     parameter: "constant.popSize",
+    distribution: "1/x",
     obj: new InversePrior('constant.popSize'),
     description: "coalescent population size parameter",
-    active: true
+    active: true,
+    prior_distribution: ["Fixed value", "Infinite Uniform (Improper)", "Uniform", "Exponential", "Normal", "Lognormal", "Gamma", "Inverse Gamma", "1/x"]
   },
   {
     parameter: "skyline.popSize",
+    distribution: "Uniform",
     obj: new UniformPrior(idref='skyline.popSize', initial=1, lower=0, upper=1E100),
     description: "Bayesian Skyline population sizes",
-    active: true
+    active: true,
+    prior_distribution: ["Fixed value", "Infinite Uniform (Improper)", "Uniform", "Exponential", "Normal", "Lognormal", "Gamma", "Inverse Gamma", "1/x"]
   }
 ];
 
+
+distribution_values = [
+  {
+    distribution: "Uniform",
+    values:["Initial value :", "Upper :" , "Lower :"]
+  },
+  {
+    distribution: "Lognormal",
+    values: ["Initial value : ", "mu : ", "sigma : ", "Offset : "]
+  },
+  {
+    distribution: "Fixed value",
+    values: ["Initial value : "]
+  },
+  {
+    distribution: "Exponential",
+    values: ["Initial value : ", "Mean : ", "Offset : "]
+  },
+  {
+    distribution: "1/x",
+    values: ["Initial value : "]
+  },
+  {
+    distribution: "Dirichlet",
+    values: []
+  },
+  {
+    distribution: "CTMC Rate Reference",
+    values: ["Initial value :"]
+  },
+  {
+    distribution: "None (Tree Prior Only)",
+    values: []
+  },
+];

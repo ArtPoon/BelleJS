@@ -156,23 +156,39 @@ function daysIntoYear(date){
 
 function loadPriors(prior){
   //Takes prior object, and modifies form to show fields that can be changed
-  $('#prior_form_description').html(prior.Description) 
-  $('#prior_form_Parameter').html('Modify ' + prior.Parameter + ' below')
-  if (prior.Bound == 'n/a'){
-   $('#prior_form_lower_bound').attr('disabled', 'disabled')
-   $('#prior_form_upper_bound').attr('disabled', 'disabled')
-   $('#prior_form_bound_title').html('Bound: n/a')
-  }
-  else{
-   $('#prior_form_lower_bound').removeAttr('disabled')
-   $('#prior_form_upper_bound').removeAttr('disabled')
-   $('#prior_form_bound_title').html('Bound:')
-   parsed_bounds = prior.Bound.replace(/[\[\] ']+/g,'').split(',')
-   $('#prior_form_lower_bound').val(parsed_bounds[0])
-   $('#prior_form_upper_bound').val(parsed_bounds[1])
-  }
+  $('#prior_form_description').html(prior.Description);
+  d3.select("#ui-id-13").text(`Prior for parameter ${prior.Parameter}`);
+  d3.select("#prior_form_Parameter").text(`Select prior distribution for ${prior.Parameter}`);
+  d3.selectAll(".ui-icon-closethick").remove();
 
+  row = priors.filter(x => x.parameter===prior.Parameter)[0];
 
+  d3.select('#prior-distribution')
+    .selectAll('option').remove();
+
+  var options = d3.select('#prior-distribution')
+    .selectAll('option')
+    .data([row.distribution])
+    .enter()
+    .append('option')
+    .attr('value', d => d)
+    .text(function(d) { console.log(d); return d});
+
+  var options = distribution_values.filter(x => x.distribution===row.distribution)[0];
+
+  var formTable = d3.select("#change-parameters");
+  formTable.selectAll("div").remove();
+  let rows = formTable.selectAll("div")
+      .data(options.values)
+      .enter()
+      .append("div")
+      .append('label')
+      .text(function(d, i) {return d})
+      .append('input')
+      .attr("id", function(d) {
+        return d.split(" ")[0]
+      })
+      .attr("type", "text");
 }
 
 $( function() {
@@ -310,8 +326,63 @@ $( function() {
  
   function changePriors(){
     //Update bound information
-    bound = Array($('#prior_form_lower_bound').val(), $('#prior_form_upper_bound').val())
-    priors.filter(x=> x.parameter===prior.Parameter)[0].obj.bound = bound
+    // bound = Array($('#prior_form_lower_bound').val(), $('#prior_form_upper_bound').val())
+    // priors.filter(x=> x.parameter===prior.Parameter)[0].obj.bound = bound
+    
+    // Update hyperparameters
+    let row;
+    switch(prior.Parameter) {
+      case "kappa":
+      {
+        row = priors.filter(x => x.parameter==="kappa")[0];
+        if ($("#Initial").val())
+          row.obj.initial = parseFloat($("#Initial").val());
+        if ($("#mu").val())
+          row.obj.mu = parseFloat($("#mu").val());
+        if ($("#sigma").val())
+          row.obj.sigma = parseFloat($("#sigma").val());
+        if ($("#Offset").val())
+          row.obj.offset = parseFloat($("#Offset").val());
+        break;
+      }
+      case "ucld.stdev":
+      {
+        row = priors.filter(x => x.parameter==="ucld.stdev")[0];
+        if ($("#Initial").val())
+          row.obj.initial = parseFloat($("#Initial").val());
+        if ($("#Mean").val())
+          row.obj.mean = parseFloat($("#Mean").val());
+        if ($("#Offset").val())
+          row.obj.offset = parseFloat($("#Offset").val());
+        break;
+      }
+      case "clock.rate":
+      case "ucld.mean":
+      {
+        row = priors.filter(x => x.parameter===prior.Parameter)[prior.Prior.split(" ")[0] === "Fixed" ? 0 : 1];
+        if ($("#Initial").val())
+          row.obj.initial = parseFloat($("#Initial").val());
+        break;
+      }
+      case "constant.popSize":
+      {
+        row = priors.filter(x => x.parameter==="constant.popSize")[0];
+        if ($("#Initial").val())
+          row.obj.initial = parseFloat($("#Initial").val());
+        break;
+      }
+      case "skyline.popSize":
+      {
+        row = priors.filter(x => x.parameter===prior.Parameter)[0];
+        if ($("#Initial").val())
+          row.obj.initial = parseFloat($("#Initial").val());
+        if ($("#Upper").val())
+          row.obj.bound[1] = parseFloat($("#Upper").val());
+        if ($("#Lower").val())
+          row.obj.bound[0] = parseFloat($("#Lower").val());
+        break;
+      }
+    }
 
     //update Table
     changeSubModel();
