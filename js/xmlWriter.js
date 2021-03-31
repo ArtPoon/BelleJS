@@ -171,12 +171,6 @@ function updateStartingTree(beast) {
       treeModel.replaceChild(treeModel_coalescentTree, upgmaTree[0]);
     }
   }
-
-  let new_populationTree = document.createElementNS("", "populationTree"),
-      new_treeModel = document.createElementNS("", "treeModel");
-
-  new_treeModel.setAttribute("idref", "treeModel");
-  new_populationTree.appendChild(new_treeModel);
 }
 
 
@@ -192,25 +186,45 @@ function set_tree_prior(beast) {
       generalizedSkyLineLikelihood = beast.getElementsByTagName("generalizedSkyLineLikelihood"),
       exponentialMarkovLikelihood = beast.getElementsByTagName("exponentialMarkovLikelihood"),
       mcmc = beast.getElementsByTagName("mcmc")[0],
-      prior = mcmc.getElementsByTagName("prior")[0];
+      prior = mcmc.getElementsByTagName("prior")[0],
+      anchor = beast.getElementsByTagName("rateStatistic");
 
+  // ignore reference elements
+  coalescentLikelihood = Array.from(coalescentLikelihood).filter(x => x.parentNode===beast);
+  generalizedSkyLineLikelihood = Array.from(generalizedSkyLineLikelihood).filter(x => x.parentNode===beast);
+  exponentialMarkovLikelihood = Array.from(exponentialMarkovLikelihood).filter(x => x.parentNode===beast);
+  
   if (constant.active) {
-    // Generate coalescent likelihood
-    let new_coalescentLikelihood = document.createElementNS("", "coalescentLikelihood"),
-        new_model = document.createElementNS("", "taxa"),
-        new_constantSize = document.createElementNS("", "constantSize");
+    // is coalescentLikelihood already present?
 
-    new_constantSize.setAttribute("idref", id);
-    new_model.appendChild(new_constantSize);
-    new_coalescentLikelihood.appendChild(new_model);
-    new_coalescentLikelihood.appendChild(new_populationTree);
-    if (generalizedSkyLineLikelihood.length > 0) {
-      beast.appendChild(new_coalescentLikelihood);
+    if (coalescentLikelihood.length === 0) {
+      // restore coalescent likelihood
+      let clike = document.createElementNS("", "coalescentLikelihood"),
+          mod = document.createElementNS("", "model"),
+          size = document.createElementNS("", "constantSize"),
+          poptree = document.createElementNS("", "populationTree"),
+          treemod = document.createElementNS("", "treeModel");
+
+      size.setAttribute("idref", skyline.active ? "initialDemo" : "constant");
+      mod.appendChild(size);
+      treemod.setAttribute("idref", "treeModel");
+      poptree.appendChild(treemod);
+
+      clike.setAttribute("id", "coalescent");
+      clike.appendChild(mod);
+      clike.appendChild(poptree);
+
+      beast.insertBefore(clike, anchor[0]);
     }
+    else {
+      console.log(coalescentLikelihood);
+    }
+
 
     // remove skyline likelihoods
     if (generalizedSkyLineLikelihood.length > 0)
       beast.removeChild(generalizedSkyLineLikelihood[0]);
+
     if (exponentialMarkovLikelihood.length > 0)
       beast.removeChild(exponentialMarkovLikelihood[0]);
 
@@ -233,10 +247,8 @@ function set_tree_prior(beast) {
 
     // Create new elements for for Bayesian Skyline
     if (generalizedSkyLineLikelihood.length === 0) {
-      let generalizedSkyline,
-          exponentialMarkovLikelihood;
 
-      generalizedSkyline= xmlReader.parseFromString(`
+      let gsl = xmlReader.parseFromString(`
 <generalizedSkyLineLikelihood id="skyline" linear="${!piecewise_const}">
   <populationSizes>
     <parameter id="skyline.popSize" 
@@ -254,7 +266,7 @@ function set_tree_prior(beast) {
               `, 'text/xml').children[0];
 
 
-      exponentialMarkovLikelihood = xmlReader.parseFromString(`
+      let esl = xmlReader.parseFromString(`
 <exponentialMarkovLikelihood id="eml1" jeffreys="true">
   <chainParameter>
     <parameter idref="skyline.popSize"/>
@@ -263,13 +275,12 @@ function set_tree_prior(beast) {
               `, 'text/xml').children[0];
 
 
-      let anchor = beast.getElementsByTagName("rateStatistic");
-      beast.insertBefore(generalizedSkyline, anchor[0]);
-      beast.insertBefore(exponentialMarkovLikelihood, anchor[0]);
+      beast.insertBefore(gsl, anchor[0]);
+      beast.insertBefore(esl, anchor[0]);
 
     }
     else {
-      // re-use existing skyline elements
+      // re-use existing skyline elements - FIXME does this work?!?
       let popSiz_param = generalizedSkyLineLikelihood[0]
               .getElementsByTagName("populationSizes")[0]
               .getElementsByTagName("parameter")[0],
@@ -286,27 +297,29 @@ function set_tree_prior(beast) {
       popSiz_param.setAttribute("lower", skyline.obj.bound[0].toFixed(1).toString());
       groupSiz_param.setAttribute("dimension", num_groups);
     }
+
+    // remove coalescent likelihood
+    coalescentLikelihood = beast.getElementsByTagName("coalescentLikelihood");
+    coalescentLikelihood = Array.from(coalescentLikelihood).filter(x => x.parentNode===beast);
+    if (coalescentLikelihood.length > 0) {
+      beast.removeChild(coalescentLikelihood[0]);
+    }
+
+    // remove coalescent likelihood from prior settings
+    let clike = prior.getElementsByTagName("coalescentLikelihood");
+    if (clike.length > 0) {
+      prior.removeChild(clike[0]);
+    }
+
+    // add skyline likelihoods to prior settings
+    let gsl = document.createElementNS("", "generalizedSkyLineLikelihood"),
+        eml = document.createElementNS("", "exponentialMarkovLikelihood");
+    gsl.setAttribute("idref", "skyline");
+    prior.appendChild(gsl);
+    eml.setAttribute("idref", "eml1");
+    prior.appendChild(eml);
   }
 
-  // remove coalescent likelihood
-  coalescentLikelihood = beast.getElementsByTagName("coalescentLikelihood");
-  if (coalescentLikelihood.length > 0) {
-    beast.removeChild(coalescentLikelihood[0]);
-  }
-
-  // remove coalescent likelihood from prior settings
-  let clike = prior.getElementsByTagName("coalescentLikelihood");
-  if (clike.length > 0) {
-    prior.removeChild(clike[0]);
-  }
-
-  // add skyline likelihoods to prior settings
-  let gsl = document.createElementNS("", "generalizedSkyLineLikelihood"),
-      eml = document.createElementNS("", "exponentialMarkovLikelihood");
-  gsl.setAttribute("idref", "skyline");
-  prior.appendChild(gsl);
-  eml.setAttribute("idref", "eml1");
-  prior.appendChild(eml);
 }
 
 
